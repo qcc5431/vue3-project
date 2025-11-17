@@ -7,13 +7,8 @@
   <Persion />
 </template>
 
-<script lang="ts">
-import Persion from './components/Persion.vue'
-
-export default {
-  name: 'App',
-  components: { Persion },
-}
+<script lang="ts" setup>
+import Persion from '@/components/Persion.vue'
 </script>
 
 <style scoped></style>
