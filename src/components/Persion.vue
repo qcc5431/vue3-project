@@ -6,4 +6,8 @@
 const name = 'haha'
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.persion {
+  color: $primary-color;
+}
+</style>

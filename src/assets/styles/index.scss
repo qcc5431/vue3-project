@@ -1,0 +1,4 @@
+// 样式模块入口 - 仅用于 @forward 导出，不包含实际样式
+// 这个文件会被 Vite 的 additionalData 自动注入到每个组件中
+
+@forward './variables';
