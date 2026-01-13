@@ -14,7 +14,9 @@ export default defineConfig({
     vue(),
     vueDevTools(),
     AutoImport({
+      imports: ['vue', 'vue-router'], // 自动导入 Vue 和 Vue Router 的 API
       resolvers: [ElementPlusResolver()],
+      dts: 'auto-imports.d.ts', // 生成类型声明文件
     }),
     Components({
       resolvers: [ElementPlusResolver()],
@@ -26,16 +28,16 @@ export default defineConfig({
         additionalData: (content: string, filePath: string) => {
           // 排除 index.scss 本身，避免循环引用
           if (filePath.includes('assets/styles/index.scss')) {
-            return content;
+            return content
           }
-          return `@use "@/assets/styles" as *;\n${content}`;
+          return `@use "@/assets/styles" as *;\n${content}`
         },
       },
     },
   },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
 })

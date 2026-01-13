@@ -4,6 +4,7 @@ import type { RouteRecordRaw } from 'vue-router'
 // 导入路由组件
 const Home = () => import('@/views/home/index.vue')
 const Login = () => import('@/views/login/index.vue')
+const NotFound = () => import('@/views/404/index.vue')
 
 // 定义路由规则
 const routes: Array<RouteRecordRaw> = [
@@ -25,6 +26,14 @@ const routes: Array<RouteRecordRaw> = [
     component: Login,
     meta: {
       title: '登录',
+    },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
+    meta: {
+      title: '404 - 页面不存在',
     },
   },
 ]
