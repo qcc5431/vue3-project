@@ -1,14 +1,17 @@
 <template>
-  <h1>nihao</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-  <Persion />
+  <div id="app">
+    <!-- 路由出口：当前路由匹配的组件将渲染在这里 -->
+    <router-view />
+  </div>
 </template>
 
 <script lang="ts" setup>
-import Persion from '@/components/Persion.vue'
+// 不再需要导入单个组件，由路由管理
 </script>
 
-<style scoped></style>
+<style scoped>
+#app {
+  width: 100%;
+  height: 100vh;
+}
+</style>
