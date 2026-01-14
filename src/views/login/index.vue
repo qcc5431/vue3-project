@@ -71,8 +71,10 @@
 <script setup lang="ts">
 import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useUserStore } from '@/store/modules/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 // 表单引用
 const loginFormRef = ref<FormInstance>()
@@ -109,13 +111,18 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       try {
-        // TODO: 调用登录接口
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        // 调用 Pinia store 的登录方法
+        await userStore.login({
+          username: loginForm.username,
+          password: loginForm.password,
+        })
 
         ElMessage.success('登录成功')
+        // 登录成功后跳转到首页
         router.push('/home')
       } catch (error) {
         ElMessage.error('登录失败，请检查用户名或密码')
+        console.error('登录错误:', error)
       } finally {
         loading.value = false
       }
