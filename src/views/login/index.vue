@@ -91,16 +91,53 @@ const rememberMe = ref(false)
 // 加载状态
 const loading = ref(false)
 
+// 自定义密码验证规则
+const validatePassword = (rule: any, value: string, callback: any): void => {
+  if (!value) {
+    callback(new Error('请输入密码'))
+    return
+  }
+
+  // 密码长度验证
+  if (value.length < 8 || value.length > 20) {
+    callback(new Error('密码长度为 8-20 个字符'))
+    return
+  }
+
+  // 必须包含大写字母
+  if (!/[A-Z]/.test(value)) {
+    callback(new Error('密码必须包含至少一个大写字母'))
+    return
+  }
+
+  // 必须包含小写字母
+  if (!/[a-z]/.test(value)) {
+    callback(new Error('密码必须包含至少一个小写字母'))
+    return
+  }
+
+  // 必须包含数字
+  if (!/\d/.test(value)) {
+    callback(new Error('密码必须包含至少一个数字'))
+    return
+  }
+
+  // 必须包含特殊字符
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+    callback(new Error('密码必须包含至少一个特殊字符(!@#$%^&*等)'))
+    return
+  }
+
+  callback()
+}
+
 // 表单验证规则
 const loginRules: FormRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { min: 3, max: 20, message: '用户名长度为 3-20 个字符', trigger: 'blur' },
   ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度为 6-20 个字符', trigger: 'blur' },
-  ],
+  password: [{ required: true, validator: validatePassword, trigger: 'blur' }],
 }
 
 // 登录处理
