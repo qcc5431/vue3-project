@@ -3,7 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 
 // 导入路由组件
-const Home = () => import('@/views/home/index.vue')
+const Layout = () => import('@/layout/index.vue')
 const Login = () => import('@/views/login/index.vue')
 const NotFound = () => import('@/views/404/index.vue')
 
@@ -11,16 +11,58 @@ const NotFound = () => import('@/views/404/index.vue')
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/home',
-  },
-  {
-    path: '/home',
-    name: 'Home',
-    component: Home,
-    meta: {
-      title: '首页',
-      requiresAuth: true, // 需要登录认证
-    },
+    name: 'Layout',
+    component: Layout,
+    redirect: '/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('@/views/dashboard/index.vue'),
+        meta: {
+          title: '工作台',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'system',
+        name: 'System',
+        redirect: '/system/user',
+        meta: { title: '系统管理' },
+        children: [
+          {
+            path: 'user',
+            name: 'SystemUser',
+            component: () => import('@/views/system/user/index.vue'),
+            meta: { title: '用户管理', requiresAuth: true },
+          },
+          {
+            path: 'role',
+            name: 'SystemRole',
+            component: () => import('@/views/system/role/index.vue'),
+            meta: { title: '角色管理', requiresAuth: true },
+          },
+          {
+            path: 'menu',
+            name: 'SystemMenu',
+            component: () => import('@/views/system/menu/index.vue'),
+            meta: { title: '菜单管理', requiresAuth: true },
+          },
+        ],
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('@/views/profile/index.vue'),
+        meta: { title: '个人中心', requiresAuth: true },
+      },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: () => import('@/views/settings/index.vue'),
+        meta: { title: '账号设置', requiresAuth: true },
+      },
+    ],
   },
   {
     path: '/login',

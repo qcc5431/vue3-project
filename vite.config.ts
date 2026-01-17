@@ -15,8 +15,8 @@ export default defineConfig({
     vueDevTools(),
     AutoImport({
       imports: ['vue', 'vue-router'], // 自动导入 Vue 和 Vue Router 的 API
-      resolvers: [ElementPlusResolver()],
       dts: 'auto-imports.d.ts', // 生成类型声明文件
+      resolvers: [ElementPlusResolver()],
     }),
     Components({
       resolvers: [ElementPlusResolver()],

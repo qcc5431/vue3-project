@@ -156,7 +156,7 @@ const handleLogin = async () => {
 
         ElMessage.success('登录成功')
         // 登录成功后跳转到首页
-        router.push('/home')
+        router.push('/')
       } catch (error) {
         ElMessage.error('登录失败，请检查用户名或密码')
         console.error('登录错误:', error)
@@ -176,17 +176,14 @@ const handleLogin = async () => {
   overflow: hidden;
 }
 
-// 背景图层
+// 背景图层 - 使用项目主题渐变色
 .login-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80')
-    no-repeat center center;
-  background-size: cover;
-  filter: brightness(0.7);
+  background: $primary-gradient;
   z-index: 0;
 }
 
@@ -205,77 +202,74 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: $spacing-xl;
 
   .brand-info {
     text-align: center;
-    color: #fff;
+    color: $background-white;
 
     .system-title {
-      font-size: 48px;
+      font-size: 42px;
       font-weight: 700;
-      margin-bottom: 20px;
-      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      margin-bottom: $spacing-md;
       letter-spacing: 4px;
     }
 
     .system-desc {
-      font-size: 18px;
+      font-size: $font-xl;
       opacity: 0.9;
-      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
     }
   }
 }
 
 // 右侧表单区
 .login-right {
-  width: 480px;
+  width: 460px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
+  background: $background-white;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
 }
 
 .login-form-wrapper {
   width: 100%;
-  max-width: 360px;
-  padding: 40px;
+  max-width: 340px;
+  padding: $spacing-xl;
 
   .form-title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 600;
-    color: #303133;
-    margin-bottom: 8px;
+    color: $text-primary;
+    margin-bottom: $spacing-sm;
   }
 
   .form-subtitle {
-    font-size: 14px;
-    color: #909399;
-    margin-bottom: 40px;
+    font-size: $font-base;
+    color: $text-muted;
+    margin-bottom: $spacing-xl;
   }
 }
 
 .login-form {
   .el-form-item {
-    margin-bottom: 24px;
+    margin-bottom: $spacing-lg;
   }
 
   .el-input {
-    --el-input-border-radius: 8px;
+    --el-input-border-radius: #{$radius-md};
 
     :deep(.el-input__wrapper) {
-      padding: 4px 15px;
-      box-shadow: 0 0 0 1px #dcdfe6 inset;
-      transition: all 0.3s;
+      padding: $spacing-xs 15px;
+      box-shadow: 0 0 0 1px $border-color inset;
+      transition: all $transition-base;
 
       &:hover {
-        box-shadow: 0 0 0 1px #c0c4cc inset;
+        box-shadow: 0 0 0 1px $text-muted inset;
       }
 
       &.is-focus {
-        box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+        box-shadow: 0 0 0 1px $primary-color inset;
       }
     }
   }
@@ -285,26 +279,34 @@ const handleLogin = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: $spacing-lg;
 }
 
 .login-btn {
   width: 100%;
   height: 44px;
-  font-size: 16px;
-  border-radius: 8px;
+  font-size: $font-lg;
+  border-radius: $radius-md;
   letter-spacing: 2px;
+  background: $primary-gradient;
+  border: none;
+  transition: all $transition-base;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
 }
 
 .login-footer {
   text-align: center;
-  margin-top: 24px;
-  font-size: 14px;
-  color: #909399;
+  margin-top: $spacing-lg;
+  font-size: $font-base;
+  color: $text-muted;
 
   .el-link {
-    margin-left: 4px;
-    font-size: 14px;
+    margin-left: $spacing-xs;
+    font-size: $font-base;
   }
 }
 
