@@ -1,6 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
+import {
+  HomeFilled,
+  User,
+  Setting,
+  Operation,
+  Grid,
+} from '@element-plus/icons-vue'
 
 // 导入路由组件
 const Layout = () => import('@/layout/index.vue')
@@ -16,51 +23,52 @@ const routes: Array<RouteRecordRaw> = [
     redirect: '/dashboard',
     children: [
       {
-        path: 'dashboard',
+        path: '/dashboard',
         name: 'Dashboard',
         component: () => import('@/views/dashboard/index.vue'),
         meta: {
           title: '工作台',
+          icon: HomeFilled,
           requiresAuth: true,
         },
       },
       {
-        path: 'system',
+        path: '/system',
         name: 'System',
         redirect: '/system/user',
-        meta: { title: '系统管理' },
+        meta: { title: '系统管理', icon: Setting },
         children: [
           {
-            path: 'user',
+            path: '/system/user',
             name: 'SystemUser',
             component: () => import('@/views/system/user/index.vue'),
-            meta: { title: '用户管理', requiresAuth: true },
+            meta: { title: '用户管理', icon: User, requiresAuth: true },
           },
           {
-            path: 'role',
+            path: '/system/role',
             name: 'SystemRole',
             component: () => import('@/views/system/role/index.vue'),
-            meta: { title: '角色管理', requiresAuth: true },
+            meta: { title: '角色管理', icon: Operation, requiresAuth: true },
           },
           {
-            path: 'menu',
+            path: '/system/menu',
             name: 'SystemMenu',
             component: () => import('@/views/system/menu/index.vue'),
-            meta: { title: '菜单管理', requiresAuth: true },
+            meta: { title: '菜单管理', icon: Grid, requiresAuth: true },
           },
         ],
       },
       {
-        path: 'profile',
+        path: '/profile',
         name: 'Profile',
         component: () => import('@/views/profile/index.vue'),
-        meta: { title: '个人中心', requiresAuth: true },
+        meta: { title: '个人中心', icon: User, requiresAuth: true, hideInMenu: true },
       },
       {
-        path: 'settings',
+        path: '/settings',
         name: 'Settings',
         component: () => import('@/views/settings/index.vue'),
-        meta: { title: '账号设置', requiresAuth: true },
+        meta: { title: '账号设置', icon: Setting, requiresAuth: true, hideInMenu: true },
       },
     ],
   },
@@ -114,7 +122,7 @@ router.beforeEach((to, from, next) => {
     }
   } else if (to.path === '/login' && isLogin) {
     // 已登录用户访问登录页，重定向到首页
-    next('/home')
+    next('/')
   } else {
     // 不需要登录认证的页面，直接访问
     next()

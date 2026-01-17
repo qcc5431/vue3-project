@@ -37,24 +37,12 @@
 
 <script setup lang="ts">
 import SidebarItem from './SidebarItem.vue'
-import {
-  Monitor,
-  Fold,
-  Expand,
-  HomeFilled,
-  User,
-  Setting,
-  Document,
-  DataAnalysis,
-  Grid,
-  List,
-  Operation,
-} from '@element-plus/icons-vue'
+import { Monitor, Fold, Expand } from '@element-plus/icons-vue'
 
 interface MenuItem {
   path: string
   title: string
-  icon: any
+  icon?: Component
   children?: MenuItem[]
 }
 
@@ -67,61 +55,40 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const router = useRouter()
 
 const activeMenu = computed<string>(() => route.path)
 
-// 示例菜单数据 - 实际项目中可从路由或接口获取
-const menuList: MenuItem[] = [
-  {
-    path: '/dashboard',
-    title: '工作台',
-    icon: HomeFilled,
-  },
-  {
-    path: '/system',
-    title: '系统管理',
-    icon: Setting,
-    children: [
-      { path: '/system/user', title: '用户管理', icon: User },
-      { path: '/system/role', title: '角色管理', icon: Operation },
-      { path: '/system/menu', title: '菜单管理', icon: Grid },
-    ],
-  },
-  {
-    path: '/content',
-    title: '内容管理',
-    icon: Document,
-    children: [
-      { path: '/content/article', title: '文章管理', icon: List },
-      { path: '/content/category', title: '分类管理', icon: Grid },
-    ],
-  },
-  {
-    path: '/data',
-    title: '数据分析',
-    icon: DataAnalysis,
-    children: [
-      { path: '/data/overview', title: '数据概览', icon: Monitor },
-      {
-        path: '/data/report',
-        title: '报表中心',
-        icon: Document,
-        children: [
-          { path: '/data/report/daily', title: '日报表', icon: List },
-          {
-            path: '/data/report/monthly',
-            title: '月报表',
-            icon: List,
-            children: [
-              { path: '/data/report/monthly/standard', title: '标准月报', icon: Operation },
-              { path: '/data/report/monthly/special', title: '特殊月报', icon: Operation },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-]
+/**
+ * 过滤并转换路由为菜单项
+ */
+const filterMenus = (routes: RouteRecordRaw[]): MenuItem[] => {
+  return routes
+    .filter((route) => route.meta?.title && !route.meta?.hideInMenu)
+    .map((route) => {
+      const menuItem: MenuItem = {
+        path: route.path,
+        title: route.meta!.title as string,
+        icon: route.meta!.icon,
+      }
+
+      // 递归处理子路由
+      if (route.children?.length) {
+        const children = filterMenus(route.children)
+        if (children.length) {
+          menuItem.children = children
+        }
+      }
+
+      return menuItem
+    })
+}
+
+// 直接从路由配置生成菜单
+const menuList = computed<MenuItem[]>(() => {
+  const layoutRoute = router.options.routes[0]
+  return layoutRoute?.children ? filterMenus(layoutRoute.children) : []
+})
 
 const toggleCollapse = (): void => {
   emit('toggle-collapse')
