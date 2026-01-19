@@ -14,7 +14,7 @@
           <router-view v-slot="{ Component }">
             <transition name="page" mode="out-in">
               <keep-alive>
-                <component :is="Component" />
+                <component :is="Component" :key="route.path + refreshKey" />
               </keep-alive>
             </transition>
           </router-view>
@@ -28,11 +28,20 @@
 import Sidebar from './components/Sidebar.vue'
 import Header from './components/Header.vue'
 
+const route = useRoute()
 const isSidebarCollapsed = ref<boolean>(false)
+const refreshKey = ref<number>(0)
 
 const toggleSidebar = (): void => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
 }
+
+// 提供刷新方法给子组件使用
+const refreshPage = (): void => {
+  refreshKey.value++
+}
+
+provide('refreshPage', refreshPage)
 </script>
 
 <style lang="scss" scoped>

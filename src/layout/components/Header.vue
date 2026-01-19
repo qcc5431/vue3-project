@@ -18,6 +18,15 @@
 
     <!-- 右侧：工具栏 -->
     <div class="header__right">
+      <!-- 刷新按钮 -->
+      <div class="header-action" @click="refreshPage">
+        <el-tooltip content="刷新" placement="bottom">
+          <el-icon :size="18" :class="{ 'is-rotating': isRefreshing }">
+            <Refresh />
+          </el-icon>
+        </el-tooltip>
+      </div>
+
       <!-- 全屏按钮 -->
       <div class="header-action" @click="toggleFullscreen">
         <el-tooltip content="全屏" placement="bottom">
@@ -80,6 +89,7 @@ import {
   User,
   Setting,
   SwitchButton,
+  Refresh,
 } from '@element-plus/icons-vue'
 
 interface BreadcrumbItem {
@@ -91,8 +101,12 @@ const route = useRoute()
 const router = useRouter()
 
 const isFullscreen = ref<boolean>(false)
+const isRefreshing = ref<boolean>(false)
 const userName = ref<string>('Admin')
 const userRole = ref<string>('超级管理员')
+
+// 注入父组件提供的刷新方法
+const refreshPageFromLayout = inject<() => void>('refreshPage')
 
 // 面包屑数据
 const breadcrumbList = computed<BreadcrumbItem[]>(() => {
@@ -110,6 +124,21 @@ const breadcrumbList = computed<BreadcrumbItem[]>(() => {
 
   return list
 })
+
+// 刷新页面
+const refreshPage = (): void => {
+  if (!refreshPageFromLayout) return
+
+  isRefreshing.value = true
+
+  // 调用父组件的刷新方法
+  refreshPageFromLayout()
+
+  // 动画结束后重置状态
+  setTimeout(() => {
+    isRefreshing.value = false
+  }, 1000)
+}
 
 // 全屏切换
 const toggleFullscreen = (): void => {
@@ -163,8 +192,6 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-@use '@/assets/styles/variables.scss' as *;
-
 .header {
   height: $header-height;
   background: $header-bg;
@@ -331,5 +358,19 @@ watch(
 .breadcrumb-leave-to {
   opacity: 0;
   transform: translateX(10px);
+}
+
+// 刷新图标旋转动画
+.is-rotating {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

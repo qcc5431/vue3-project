@@ -1,18 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
-import {
-  HomeFilled,
-  User,
-  Setting,
-  Operation,
-  Grid,
-} from '@element-plus/icons-vue'
+import { HomeFilled, User, Setting, Operation, Grid } from '@element-plus/icons-vue'
 
 // 导入路由组件
 const Layout = () => import('@/layout/index.vue')
 const Login = () => import('@/views/login/index.vue')
 const NotFound = () => import('@/views/404/index.vue')
+const Dashboard = () => import('@/views/dashboard/index.vue')
 
 // 定义路由规则
 const routes: Array<RouteRecordRaw> = [
@@ -25,7 +20,7 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        component: () => import('@/views/dashboard/index.vue'),
+        component: Dashboard,
         meta: {
           title: '工作台',
           icon: HomeFilled,
