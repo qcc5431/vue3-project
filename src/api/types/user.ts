@@ -14,3 +14,14 @@ export interface LoginResponse {
   token: string
   userInfo: UserInfo
 }
+
+export interface RegisterParams {
+  username: string
+  password: string
+  email: string
+}
+
+export interface RegisterResponse {
+  message: string
+  data: UserInfo
+}

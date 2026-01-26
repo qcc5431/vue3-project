@@ -25,6 +25,7 @@
             :rules="loginRules"
             class="login-form"
             size="large"
+            autocomplete="off"
           >
             <el-form-item prop="username">
               <el-input
@@ -42,6 +43,7 @@
                 placeholder="请输入密码"
                 :prefix-icon="Lock"
                 show-password
+                autocomplete="off"
                 @keyup.enter="handleLogin"
               />
             </el-form-item>
@@ -60,7 +62,7 @@
 
           <div class="login-footer">
             <span>还没有账户？</span>
-            <el-link type="primary" :underline="false">立即注册</el-link>
+            <el-link type="primary" :underline="false" @click="goToRegister">立即注册</el-link>
           </div>
         </div>
       </div>
@@ -165,6 +167,11 @@ const handleLogin = async () => {
       }
     }
   })
+}
+
+// 跳转到注册页
+const goToRegister = () => {
+  router.push('/register')
 }
 </script>
 

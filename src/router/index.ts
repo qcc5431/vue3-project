@@ -6,6 +6,7 @@ import { HomeFilled, User, Setting, Operation, Grid } from '@element-plus/icons-
 // 导入路由组件
 const Layout = () => import('@/layout/index.vue')
 const Login = () => import('@/views/login/index.vue')
+const Register = () => import('@/views/register/index.vue')
 const NotFound = () => import('@/views/404/index.vue')
 const Dashboard = () => import('@/views/dashboard/index.vue')
 
@@ -73,6 +74,14 @@ const routes: Array<RouteRecordRaw> = [
     component: Login,
     meta: {
       title: '登录',
+    },
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: {
+      title: '注册',
     },
   },
   {
