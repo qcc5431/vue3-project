@@ -1,10 +1,10 @@
 export interface LoginParams {
-  username: string
+  account: string
   password: string
 }
 
 export interface UserInfo {
-  id: number
+  id?: number
   username: string
   email?: string
   avatar?: string
@@ -12,7 +12,7 @@ export interface UserInfo {
 
 export interface LoginResponse {
   token: string
-  userInfo: UserInfo
+  user: UserInfo
 }
 
 export interface RegisterParams {

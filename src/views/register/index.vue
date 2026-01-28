@@ -250,15 +250,12 @@ const handleRegister = async () => {
           password: registerForm.password,
         })
 
-        if (res.success) {
+        if (res.data) {
           ElMessage.success('注册成功，请登录')
           // 注册成功后跳转到登录页
           router.push('/login')
         }
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } }
-        const errorMsg = err?.response?.data?.message || '注册失败，请稍后重试'
-        ElMessage.error(errorMsg)
         console.error('注册错误:', error)
       } finally {
         loading.value = false

@@ -26,30 +26,25 @@ export const useUserStore = defineStore('user', {
     // 用户登录
     async login(loginParams: LoginParams) {
       try {
-        // 模拟登录接口,默认通过
-        // const res = await reqLogin(loginParams)
+        // 调用真实的登录接口
+        const res = await reqLogin(loginParams)
 
-        // 模拟返回的数据结构
-        const mockToken: string = 'mock-token-' + Date.now()
-        const mockUserInfo: UserInfo = {
-          username: loginParams.username,
-          avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
+        // 从响应中提取 token 和 user 信息
+        const { token, user } = res.data
+
+        // 保存 token
+        this.token = token
+        // 将 user 信息转换为 userInfo 格式并保存
+        this.userInfo = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
         }
 
-        this.token = mockToken
-        this.userInfo = mockUserInfo
         // 持久化存储 token
-        localStorage.setItem('token', mockToken)
+        localStorage.setItem('token', token)
 
-        // 返回模拟的响应数据
-        return {
-          code: 200,
-          message: '登录成功',
-          data: {
-            token: mockToken,
-            userInfo: mockUserInfo,
-          },
-        }
+        return res
       } catch (error) {
         console.error('登录失败:', error)
         throw error

@@ -27,10 +27,10 @@
             size="large"
             autocomplete="off"
           >
-            <el-form-item prop="username">
+            <el-form-item prop="account">
               <el-input
-                v-model="loginForm.username"
-                placeholder="请输入用户名"
+                v-model="loginForm.account"
+                placeholder="请输入用户名或邮箱"
                 :prefix-icon="User"
                 clearable
               />
@@ -83,7 +83,7 @@ const loginFormRef = ref<FormInstance>()
 
 // 登录表单数据
 const loginForm = reactive({
-  username: '',
+  account: '', // 用户名或邮箱
   password: '',
 })
 
@@ -92,6 +92,34 @@ const rememberMe = ref(false)
 
 // 加载状态
 const loading = ref(false)
+
+// 自定义账号验证规则（支持用户名或邮箱）
+const validateAccount = (rule: any, value: string, callback: any): void => {
+  if (!value) {
+    callback(new Error('请输入用户名或邮箱'))
+    return
+  }
+
+  // 检查是否为邮箱格式
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const isEmail = emailRegex.test(value)
+
+  if (isEmail) {
+    // 邮箱格式验证
+    if (value.length > 50) {
+      callback(new Error('邮箱长度不能超过50个字符'))
+      return
+    }
+  } else {
+    // 用户名格式验证
+    if (value.length < 3 || value.length > 20) {
+      callback(new Error('用户名长度为 3-20 个字符'))
+      return
+    }
+  }
+
+  callback()
+}
 
 // 自定义密码验证规则
 const validatePassword = (rule: any, value: string, callback: any): void => {
@@ -135,10 +163,7 @@ const validatePassword = (rule: any, value: string, callback: any): void => {
 
 // 表单验证规则
 const loginRules: FormRules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度为 3-20 个字符', trigger: 'blur' },
-  ],
+  account: [{ required: true, validator: validateAccount, trigger: 'blur' }],
   password: [{ required: true, validator: validatePassword, trigger: 'blur' }],
 }
 
@@ -152,7 +177,7 @@ const handleLogin = async () => {
       try {
         // 调用 Pinia store 的登录方法
         await userStore.login({
-          username: loginForm.username,
+          account: loginForm.account,
           password: loginForm.password,
         })
 
@@ -160,7 +185,7 @@ const handleLogin = async () => {
         // 登录成功后跳转到首页
         router.push('/')
       } catch (error) {
-        ElMessage.error('登录失败，请检查用户名或密码')
+        // 错误信息已在请求拦截器中统一处理并显示
         console.error('登录错误:', error)
       } finally {
         loading.value = false

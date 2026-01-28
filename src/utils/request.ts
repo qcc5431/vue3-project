@@ -33,25 +33,39 @@ request.interceptors.response.use(
     const status = error.response?.status
     const userStore = useUserStore()
 
-    switch (status) {
-      case 401:
-        message = 'token 过期，请重新登录'
-        // token 过期或无效，清除用户信息并跳转到登录页
-        userStore.logout()
-        router.push('/login')
-        break
-      case 403:
-        message = '无权访问'
-        break
-      case 404:
-        message = '请求地址错误'
-        break
-      case 500:
-        message = '服务器出现问题'
-        break
-      default:
-        message = '网络出现问题'
-        break
+    // 优先使用后端返回的错误信息
+    const backendMessage = error.response?.data?.message || error.response?.data?.msg
+
+    if (backendMessage) {
+      message = backendMessage
+    } else {
+      // 如果后端没有返回错误信息，使用默认提示
+      switch (status) {
+        case 401:
+          message = 'token 过期，请重新登录'
+          // token 过期或无效，清除用户信息并跳转到登录页
+          userStore.logout()
+          router.push('/login')
+          break
+        case 403:
+          message = '无权访问'
+          break
+        case 404:
+          message = '请求地址错误'
+          break
+        case 500:
+          message = '服务器出现问题'
+          break
+        default:
+          message = '网络出现问题'
+          break
+      }
+    }
+
+    // 对于 401 错误，即使有后端消息也要执行登出逻辑
+    if (status === 401) {
+      userStore.logout()
+      router.push('/login')
     }
 
     ElMessage({
