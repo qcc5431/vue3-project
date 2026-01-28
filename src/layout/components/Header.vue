@@ -1,164 +1,110 @@
 <template>
   <header class="header">
-    <!-- 左侧：面包屑导航 -->
+    <!-- Logo和品牌 -->
     <div class="header__left">
-      <el-breadcrumb separator="/">
-        <transition-group name="breadcrumb">
-          <el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="item.path">
-            <span v-if="index === breadcrumbList.length - 1" class="breadcrumb-current">
-              {{ item.title }}
-            </span>
-            <router-link v-else :to="item.path" class="breadcrumb-link">
-              {{ item.title }}
-            </router-link>
-          </el-breadcrumb-item>
-        </transition-group>
-      </el-breadcrumb>
+      <router-link to="/" class="logo">
+        <el-icon :size="28" color="#ff6b6b"><Location /></el-icon>
+        <span class="logo-text">旅行笔记</span>
+      </router-link>
     </div>
 
-    <!-- 右侧：工具栏 -->
+    <!-- 搜索框 -->
+    <div class="header__center">
+      <el-input
+        v-model="searchKeyword"
+        placeholder="搜索笔记、用户..."
+        :prefix-icon="Search"
+        clearable
+        @keyup.enter="handleSearch"
+      />
+    </div>
+
+    <!-- 右侧工具栏 -->
     <div class="header__right">
-      <!-- 刷新按钮 -->
-      <div class="header-action" @click="refreshPage">
-        <el-tooltip content="刷新" placement="bottom">
-          <el-icon :size="18" :class="{ 'is-rotating': isRefreshing }">
-            <Refresh />
-          </el-icon>
-        </el-tooltip>
-      </div>
+      <!-- 未登录状态 -->
+      <template v-if="!isLogin">
+        <el-button @click="router.push('/login')">登录</el-button>
+        <el-button type="primary" @click="router.push('/register')">注册</el-button>
+      </template>
 
-      <!-- 全屏按钮 -->
-      <div class="header-action" @click="toggleFullscreen">
-        <el-tooltip content="全屏" placement="bottom">
-          <el-icon :size="18">
-            <FullScreen v-if="!isFullscreen" />
-            <Aim v-else />
-          </el-icon>
-        </el-tooltip>
-      </div>
+      <!-- 已登录状态 -->
+      <template v-else>
+        <!-- 创建笔记按钮 -->
+        <el-button type="primary" @click="handleCreate">
+          <el-icon><EditPen /></el-icon>
+          创建笔记
+        </el-button>
 
-      <!-- 消息通知 -->
-      <div class="header-action">
-        <el-badge :value="5" :max="99">
-          <el-icon :size="18"><Bell /></el-icon>
-        </el-badge>
-      </div>
-
-      <!-- 用户信息下拉 -->
-      <el-dropdown trigger="click" @command="handleCommand">
-        <div class="header-user">
-          <el-avatar :size="36" class="user-avatar">
-            <img
-              src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-              alt="avatar"
-            />
-          </el-avatar>
-          <div class="user-info">
-            <span class="user-name">{{ userName }}</span>
-            <span class="user-role">{{ userRole }}</span>
-          </div>
-          <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
+        <!-- 消息通知 -->
+        <div class="header-action">
+          <el-badge :value="0" :hidden="true">
+            <el-icon :size="20"><Bell /></el-icon>
+          </el-badge>
         </div>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="profile">
-              <el-icon><User /></el-icon>
-              <span>个人中心</span>
-            </el-dropdown-item>
-            <el-dropdown-item command="settings">
-              <el-icon><Setting /></el-icon>
-              <span>账号设置</span>
-            </el-dropdown-item>
-            <el-dropdown-item divided command="logout">
-              <el-icon><SwitchButton /></el-icon>
-              <span>退出登录</span>
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+
+        <!-- 用户信息下拉 -->
+        <el-dropdown trigger="click" @command="handleCommand">
+          <div class="header-user">
+            <el-avatar :size="36" class="user-avatar">
+              <img
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=traveler01"
+                alt="avatar"
+              />
+            </el-avatar>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="profile">
+                <el-icon><User /></el-icon>
+                <span>个人主页</span>
+              </el-dropdown-item>
+              <el-dropdown-item divided command="logout">
+                <el-icon><SwitchButton /></el-icon>
+                <span>退出登录</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </template>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
 import {
-  FullScreen,
-  Aim,
+  Location,
+  Search,
+  EditPen,
   Bell,
-  ArrowDown,
   User,
-  Setting,
   SwitchButton,
-  Refresh,
 } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/modules/user'
 
-interface BreadcrumbItem {
-  path: string
-  title: string
-}
-
-const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
+const searchKeyword = ref('')
 
-const isFullscreen = ref<boolean>(false)
-const isRefreshing = ref<boolean>(false)
-const userName = ref<string>('Admin')
-const userRole = ref<string>('超级管理员')
+// 登录状态
+const isLogin = computed(() => userStore.isLogin)
 
-// 注入父组件提供的刷新方法
-const refreshPageFromLayout = inject<() => void>('refreshPage')
-
-// 面包屑数据
-const breadcrumbList = computed<BreadcrumbItem[]>(() => {
-  const matched = route.matched.filter((item) => item.meta?.title)
-  const list: BreadcrumbItem[] = [{ path: '/dashboard', title: '首页' }]
-
-  matched.forEach((item) => {
-    if (item.meta?.title && item.path !== '/dashboard') {
-      list.push({
-        path: item.path,
-        title: item.meta.title as string,
-      })
-    }
-  })
-
-  return list
-})
-
-// 刷新页面
-const refreshPage = (): void => {
-  if (!refreshPageFromLayout) return
-
-  isRefreshing.value = true
-
-  // 调用父组件的刷新方法
-  refreshPageFromLayout()
-
-  // 动画结束后重置状态
-  setTimeout(() => {
-    isRefreshing.value = false
-  }, 1000)
+// 创建笔记
+const handleCreate = () => {
+  router.push('/create')
 }
 
-// 全屏切换
-const toggleFullscreen = (): void => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen()
-    isFullscreen.value = true
-  } else {
-    document.exitFullscreen()
-    isFullscreen.value = false
-  }
+// 搜索
+const handleSearch = () => {
+  if (!searchKeyword.value.trim()) return
+  ElMessage.info('搜索功能开发中...')
+  // TODO: 实现搜索功能
 }
 
 // 下拉菜单命令处理
-const handleCommand = (command: string): void => {
+const handleCommand = (command: string) => {
   switch (command) {
     case 'profile':
       router.push('/profile')
-      break
-    case 'settings':
-      router.push('/settings')
       break
     case 'logout':
       handleLogout()
@@ -167,7 +113,7 @@ const handleCommand = (command: string): void => {
 }
 
 // 退出登录
-const handleLogout = (): void => {
+const handleLogout = () => {
   ElMessageBox.confirm('确定要退出登录吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -181,60 +127,105 @@ const handleLogout = (): void => {
     })
     .catch(() => {})
 }
-
-// 监听全屏状态变化
-watch(
-  () => document.fullscreenElement,
-  () => {
-    isFullscreen.value = !!document.fullscreenElement
-  },
-)
 </script>
 
 <style lang="scss" scoped>
 .header {
-  height: $header-height;
+  height: 60px;
   background: $header-bg;
-  box-shadow: $header-shadow;
+  border-bottom: 1px solid $border-color;
+  box-shadow: 0 2px 8px rgba(109, 186, 122, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 $spacing-lg;
+  padding: 0 32px;
   position: sticky;
   top: 0;
-  z-index: 90;
+  z-index: 100;
 
   &__left {
-    display: flex;
-    align-items: center;
-
-    :deep(.el-breadcrumb) {
-      font-size: $font-base;
-
-      .el-breadcrumb__separator {
-        color: $text-muted;
-      }
-    }
-
-    .breadcrumb-link {
-      color: $text-secondary;
-      transition: color $transition-fast;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: transform 0.2s;
 
       &:hover {
+        transform: scale(1.05);
+      }
+
+      .el-icon {
         color: $primary-color;
       }
-    }
 
-    .breadcrumb-current {
-      color: $text-primary;
-      font-weight: 500;
+      .logo-text {
+        font-size: 20px;
+        font-weight: 600;
+        background: $primary-gradient;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    }
+  }
+
+  &__center {
+    flex: 1;
+    max-width: 500px;
+    margin: 0 48px;
+
+    :deep(.el-input) {
+      .el-input__wrapper {
+        background: $background-color;
+        border-radius: 20px;
+        box-shadow: none;
+        padding: 4px 16px;
+
+        .el-input__inner {
+          color: $text-primary;
+
+          &::placeholder {
+            color: $secondary-color;
+          }
+        }
+
+        &:hover {
+          background: darken($background-color, 3%);
+        }
+
+        &.is-focus {
+          background: #fff;
+          box-shadow: 0 0 0 2px rgba(109, 186, 122, 0.3);
+        }
+      }
     }
   }
 
   &__right {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    gap: 16px;
+
+    .el-button {
+      background: transparent;
+      border: 1px solid $primary-color;
+      color: $primary-color;
+
+      &:hover {
+        background: rgba(109, 186, 122, 0.1);
+      }
+
+      &.el-button--primary {
+        background: $primary-gradient;
+        border: none;
+        color: #fff;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
   }
 }
 
@@ -244,41 +235,30 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: $radius-md;
+  border-radius: 50%;
   cursor: pointer;
-  color: $text-secondary;
-  transition: all $transition-fast;
+  color: $primary-color;
+  transition: all 0.2s;
 
   &:hover {
     background: $background-color;
-    color: $primary-color;
-  }
-
-  :deep(.el-badge__content) {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    border: none;
+    color: darken($primary-color, 10%);
   }
 }
 
 .header-user {
   display: flex;
   align-items: center;
-  padding: 6px 12px;
-  border-radius: $radius-lg;
   cursor: pointer;
-  transition: all $transition-fast;
-  margin-left: $spacing-sm;
+  transition: transform 0.2s;
 
   &:hover {
-    background: $background-color;
+    transform: scale(1.05);
   }
 
   .user-avatar {
-    border: 2px solid transparent;
-    background:
-      $primary-gradient padding-box,
-      $primary-gradient border-box;
-    background-clip: padding-box, border-box;
+    border: 2px solid $primary-color;
+    box-shadow: 0 2px 8px rgba(109, 186, 122, 0.2);
 
     img {
       width: 100%;
@@ -286,91 +266,39 @@ watch(
       object-fit: cover;
     }
   }
-
-  .user-info {
-    display: flex;
-    flex-direction: column;
-    margin-left: $spacing-sm;
-    line-height: 1.3;
-
-    .user-name {
-      font-size: $font-base;
-      font-weight: 500;
-      color: $text-primary;
-    }
-
-    .user-role {
-      font-size: $font-xs;
-      color: $text-muted;
-    }
-  }
-
-  .dropdown-icon {
-    margin-left: $spacing-xs;
-    color: $text-muted;
-    transition: transform $transition-fast;
-  }
-
-  &:hover .dropdown-icon {
-    transform: rotate(180deg);
-  }
 }
 
 :deep(.el-dropdown-menu) {
-  padding: $spacing-sm;
-  border-radius: $radius-md;
+  padding: 8px;
+  border-radius: 8px;
   border: 1px solid $border-color;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(109, 186, 122, 0.15);
+  background: $header-bg;
 
   .el-dropdown-menu__item {
     padding: 10px 16px;
-    border-radius: $radius-sm;
-    font-size: $font-base;
+    border-radius: 6px;
+    font-size: 14px;
     color: $text-secondary;
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    gap: 8px;
 
     &:hover {
-      background: rgba($primary-color, 0.08);
+      background: rgba(109, 186, 122, 0.15);
       color: $primary-color;
     }
 
     &.is-divided {
-      margin-top: $spacing-sm;
+      margin-top: 8px;
       border-top: 1px solid $border-color;
-      padding-top: $spacing-md;
+      padding-top: 8px;
 
       &:hover {
         color: $error-color;
-        background: rgba($error-color, 0.08);
+        background: rgba(232, 141, 141, 0.1);
       }
     }
-  }
-}
-
-.breadcrumb-enter-active,
-.breadcrumb-leave-active {
-  transition: all $transition-fast;
-}
-
-.breadcrumb-enter-from,
-.breadcrumb-leave-to {
-  opacity: 0;
-  transform: translateX(10px);
-}
-
-// 刷新图标旋转动画
-.is-rotating {
-  animation: rotate 1s linear infinite;
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
   }
 }
 </style>

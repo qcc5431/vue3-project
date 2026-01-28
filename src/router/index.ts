@@ -1,14 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
-import { HomeFilled, User, Setting, Operation, Grid } from '@element-plus/icons-vue'
 
 // 导入路由组件
 const Layout = () => import('@/layout/index.vue')
 const Login = () => import('@/views/login/index.vue')
 const Register = () => import('@/views/register/index.vue')
 const NotFound = () => import('@/views/404/index.vue')
-const Dashboard = () => import('@/views/dashboard/index.vue')
+
+// Home and Note pages
+const Home = () => import('@/views/home/index.vue')
+const Following = () => import('@/views/following/index.vue')
+const Favorites = () => import('@/views/favorites/index.vue')
+const MyNotes = () => import('@/views/my-notes/index.vue')
+const CreateNote = () => import('@/views/note/create.vue')
+const NoteDetail = () => import('@/views/note/detail.vue')
+const Profile = () => import('@/views/profile/index.vue')
 
 // 定义路由规则
 const routes: Array<RouteRecordRaw> = [
@@ -16,55 +23,79 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     name: 'Layout',
     component: Layout,
-    redirect: '/dashboard',
+    redirect: '/',
     children: [
       {
-        path: '/dashboard',
-        name: 'Dashboard',
-        component: Dashboard,
+        path: '/',
+        name: 'Home',
+        component: Home,
         meta: {
-          title: '工作台',
-          icon: HomeFilled,
+          title: '首页',
+          requiresAuth: false, // 首页无需登录
+        },
+      },
+      {
+        path: '/following',
+        name: 'Following',
+        component: Following,
+        meta: {
+          title: '关注',
           requiresAuth: true,
         },
       },
       {
-        path: '/system',
-        name: 'System',
-        redirect: '/system/user',
-        meta: { title: '系统管理', icon: Setting },
-        children: [
-          {
-            path: '/system/user',
-            name: 'SystemUser',
-            component: () => import('@/views/system/user/index.vue'),
-            meta: { title: '用户管理', icon: User, requiresAuth: true },
-          },
-          {
-            path: '/system/role',
-            name: 'SystemRole',
-            component: () => import('@/views/system/role/index.vue'),
-            meta: { title: '角色管理', icon: Operation, requiresAuth: true },
-          },
-          {
-            path: '/system/menu',
-            name: 'SystemMenu',
-            component: () => import('@/views/system/menu/index.vue'),
-            meta: { title: '菜单管理', icon: Grid, requiresAuth: true },
-          },
-        ],
+        path: '/favorites',
+        name: 'Favorites',
+        component: Favorites,
+        meta: {
+          title: '收藏',
+          requiresAuth: true,
+        },
       },
       {
-        path: '/profile',
+        path: '/my-notes',
+        name: 'MyNotes',
+        component: MyNotes,
+        meta: {
+          title: '我的笔记',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: '/create',
+        name: 'CreateNote',
+        component: CreateNote,
+        meta: {
+          title: '创建笔记',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: '/note/:id',
+        name: 'NoteDetail',
+        component: NoteDetail,
+        meta: {
+          title: '笔记详情',
+          requiresAuth: false, // 详情页无需登录
+        },
+      },
+      {
+        path: '/note/:id/edit',
+        name: 'EditNote',
+        component: CreateNote,
+        meta: {
+          title: '编辑笔记',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: '/profile/:id?',
         name: 'Profile',
-        component: () => import('@/views/profile/index.vue'),
-        meta: { title: '个人中心', icon: User, requiresAuth: true, hideInMenu: true },
-      },
-      {
-        path: '/settings',
-        name: 'Settings',
-        component: () => import('@/views/settings/index.vue'),
-        meta: { title: '账号设置', icon: Setting, requiresAuth: true, hideInMenu: true },
+        component: Profile,
+        meta: {
+          title: '个人主页',
+          requiresAuth: false, // 个人主页无需登录
+        },
       },
     ],
   },
@@ -73,7 +104,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Login',
     component: Login,
     meta: {
-      title: '登录',
+      title: '登录 - 旅行笔记',
     },
   },
   {
@@ -81,7 +112,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Register',
     component: Register,
     meta: {
-      title: '注册',
+      title: '注册 - 旅行笔记',
     },
   },
   {
@@ -98,7 +129,6 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  // 每次路由切换时，页面都会自动滚动到顶部（左上角 0,0 位置）
   scrollBehavior() {
     return { left: 0, top: 0 }
   },

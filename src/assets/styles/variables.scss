@@ -1,38 +1,26 @@
-// 主题色 - 科技感蓝紫渐变色系
-$primary-color: #667eea;
-$primary-light: #764ba2;
-$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+// 主题色 - 可爱生动绿色系
+$primary-color: #6dba7a;
+$primary-light: #8dd399;
+$primary-gradient: linear-gradient(135deg, #6dba7a 0%, #8dd399 100%);
 
-$secondary-color: #00d4aa;
-$success-color: #10b981;
-$warning-color: #f59e0b;
-$error-color: #ef4444;
-$info-color: #3b82f6;
-
-// 深色侧边栏配色
-$sidebar-bg: #1e1e2d;
-$sidebar-bg-light: #27293d;
-$sidebar-text: #a2a3b7;
-$sidebar-text-active: #ffffff;
-$sidebar-hover-bg: rgba(102, 126, 234, 0.15);
-$sidebar-active-bg: $primary-gradient;
+$secondary-color: #a8d5b1;
+$success-color: #6dba7a;
+$warning-color: #f0b969;
+$error-color: #e88d8d;
+$info-color: #8dd399;
 
 // 中性色
-$text-primary: #1f2937;
-$text-secondary: #6b7280;
-$text-muted: #9ca3af;
-$border-color: #e5e7eb;
-$background-color: #f3f4f6;
-$background-white: #ffffff;
+$text-primary: #3a4a3e;
+$text-secondary: #5d6e62;
+$text-muted: #91a599;
+$border-color: #d6e3da;
+$background-color: #f2f6f3;
+$background-white: #fafbfa;
 
 // 顶部栏
 $header-height: 60px;
-$header-bg: #ffffff;
-$header-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-
-// 侧边栏
-$sidebar-width: 240px;
-$sidebar-collapsed-width: 64px;
+$header-bg: $background-white;
+$header-shadow: 0 2px 8px rgba(109, 186, 122, 0.08);
 
 // 字体大小
 $font-xs: 12px;
@@ -56,6 +44,6 @@ $radius-lg: 12px;
 $radius-xl: 16px;
 
 // 过渡
-$transition-fast: 0.15s ease;
-$transition-base: 0.25s ease;
-$transition-slow: 0.35s ease;
+$transition-fast: 0.2s ease;
+$transition-base: 0.3s ease;
+$transition-slow: 0.4s ease;

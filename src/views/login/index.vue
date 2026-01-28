@@ -1,23 +1,24 @@
 <template>
   <div class="login-container">
-    <!-- 背景图层 -->
-    <div class="login-bg"></div>
-
-    <!-- 内容区域 -->
-    <div class="login-content">
+    <!-- 登录卡片 -->
+    <div class="login-card">
       <!-- 左侧信息展示区 -->
       <div class="login-left">
         <div class="brand-info">
-          <h1 class="system-title">后台管理系统</h1>
-          <p class="system-desc">高效、安全、便捷的企业级管理平台</p>
+          <div class="logo-icon">
+            <el-icon :size="70"><Location /></el-icon>
+          </div>
+          <h1 class="system-title">旅行笔记</h1>
+          <p class="system-desc">记录旅途中的每一个精彩瞬间</p>
+          <p class="system-desc">分享你的故事，发现更多精彩</p>
         </div>
       </div>
 
       <!-- 右侧登录表单 -->
       <div class="login-right">
         <div class="login-form-wrapper">
-          <h2 class="form-title">用户登录</h2>
-          <p class="form-subtitle">欢迎回来，请登录您的账户</p>
+          <h2 class="form-title">欢迎回来</h2>
+          <p class="form-subtitle">登录账号，继续你的旅程</p>
 
           <el-form
             ref="loginFormRef"
@@ -71,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, Location } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 
@@ -202,30 +203,24 @@ const goToRegister = () => {
 
 <style scoped lang="scss">
 .login-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $background-color;
+  padding: $spacing-xl;
 }
 
-// 背景图层 - 使用项目主题渐变色
-.login-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: $primary-gradient;
-  z-index: 0;
-}
-
-// 内容区域
-.login-content {
-  position: relative;
-  z-index: 1;
+// 登录卡片
+.login-card {
   display: flex;
   width: 100%;
-  height: 100%;
+  max-width: 1000px;
+  min-height: 600px;
+  background: $background-white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(109, 186, 122, 0.15);
+  overflow: hidden;
 }
 
 // 左侧信息区
@@ -234,40 +229,52 @@ const goToRegister = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: $primary-gradient;
   padding: $spacing-xl;
 
   .brand-info {
     text-align: center;
     color: $background-white;
 
+    .logo-icon {
+      margin-bottom: $spacing-lg;
+      animation: float 3s ease-in-out infinite;
+
+      .el-icon {
+        color: rgba(255, 255, 255, 0.95);
+      }
+    }
+
     .system-title {
-      font-size: 42px;
+      font-size: 40px;
       font-weight: 700;
       margin-bottom: $spacing-md;
-      letter-spacing: 4px;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.98);
     }
 
     .system-desc {
-      font-size: $font-xl;
+      font-size: $font-base;
       opacity: 0.9;
+      margin-bottom: $spacing-xs;
+      line-height: 1.6;
     }
   }
 }
 
 // 右侧表单区
 .login-right {
-  width: 460px;
+  width: 440px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $background-white;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
+  padding: $spacing-xl;
 }
 
 .login-form-wrapper {
   width: 100%;
   max-width: 340px;
-  padding: $spacing-xl;
 
   .form-title {
     font-size: 26px;
@@ -342,14 +349,43 @@ const goToRegister = () => {
   }
 }
 
-// 响应式适配
-@media screen and (max-width: 768px) {
+// 响应式布局
+@media (max-width: 768px) {
+  .login-card {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
   .login-left {
-    display: none;
+    padding: $spacing-lg;
+
+    .brand-info {
+      .logo-icon {
+        .el-icon {
+          font-size: 50px;
+        }
+      }
+
+      .system-title {
+        font-size: 28px;
+      }
+    }
   }
 
   .login-right {
     width: 100%;
+    padding: $spacing-lg;
+  }
+}
+
+// 浮动动画
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 </style>

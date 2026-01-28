@@ -1,96 +1,66 @@
 <template>
   <div class="layout">
-    <!-- 侧边栏 -->
-    <Sidebar :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebar" />
+    <!-- 顶部栏 -->
+    <Header />
 
-    <!-- 主内容区 -->
-    <div class="layout__main" :class="{ 'layout__main--expanded': isSidebarCollapsed }">
-      <!-- 顶部栏 -->
-      <Header />
+    <!-- 主体区域 -->
+    <div class="layout-body">
+      <!-- 左侧分类栏 -->
+      <CategorySidebar />
 
       <!-- 内容区 -->
-      <main class="layout__content">
-        <div class="content-wrapper">
-          <router-view v-slot="{ Component }">
-            <transition name="page" mode="out-in">
-              <keep-alive>
-                <component :is="Component" :key="route.path + refreshKey" />
-              </keep-alive>
-            </transition>
-          </router-view>
-        </div>
+      <main class="layout-content">
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" :key="route.path" />
+          </transition>
+        </router-view>
       </main>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import Sidebar from './components/Sidebar.vue'
 import Header from './components/Header.vue'
+import CategorySidebar from './components/CategorySidebar.vue'
 
 const route = useRoute()
-const isSidebarCollapsed = ref<boolean>(false)
-const refreshKey = ref<number>(0)
-
-const toggleSidebar = (): void => {
-  isSidebarCollapsed.value = !isSidebarCollapsed.value
-}
-
-// 提供刷新方法给子组件使用
-const refreshPage = (): void => {
-  refreshKey.value++
-}
-
-provide('refreshPage', refreshPage)
 </script>
 
 <style lang="scss" scoped>
 .layout {
-  display: flex;
   min-height: 100vh;
-  background: $background-color;
+  background: #e8ebe9;
+  display: flex;
+  flex-direction: column;
 
-  &__main {
-    flex: 1;
+  .layout-body {
     display: flex;
-    flex-direction: column;
-    min-width: 0;
-    margin-left: 0;
-    transition: margin-left $transition-base;
-
-    &--expanded {
-      margin-left: 0;
-    }
+    flex: 1;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
   }
 
-  &__content {
+  .layout-content {
     flex: 1;
-    padding: $spacing-md;
-    overflow-y: auto;
-
-    .content-wrapper {
-      min-height: calc(100vh - #{$header-height} - #{$spacing-lg * 2});
-      background: $background-white;
-      border-radius: $radius-lg;
-      padding: $spacing-lg;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
+    padding: 24px;
+    min-width: 0;
   }
 }
 
 // 页面切换动画
-.page-enter-active,
-.page-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: all 0.2s ease;
 }
 
-.page-enter-from {
+.fade-enter-from {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateY(10px);
 }
 
-.page-leave-to {
+.fade-leave-to {
   opacity: 0;
-  transform: translateX(-20px);
 }
 </style>
