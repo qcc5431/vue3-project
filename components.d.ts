@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AuthModal: typeof import('./src/components/AuthModal.vue')['default']
     CommentInput: typeof import('./src/components/CommentInput.vue')['default']
     CommentList: typeof import('./src/components/CommentList.vue')['default']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
@@ -20,6 +21,7 @@ declare module 'vue' {
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
+    ElDialog: typeof import('element-plus/es')['ElDialog']
     ElDivider: typeof import('element-plus/es')['ElDivider']
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
     ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']

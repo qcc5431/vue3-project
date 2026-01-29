@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
-import router from '@/router'
 
 // 利用 axios 对象的 create 方法，创建 axios 实例，来增加一些额外配置
 const request = axios.create({
@@ -43,9 +42,9 @@ request.interceptors.response.use(
       switch (status) {
         case 401:
           message = 'token 过期，请重新登录'
-          // token 过期或无效，清除用户信息并跳转到登录页
+          // token 过期或无效，清除用户信息并弹出登录框
           userStore.logout()
-          router.push('/login')
+          userStore.openLoginModal()
           break
         case 403:
           message = '无权访问'
@@ -65,7 +64,7 @@ request.interceptors.response.use(
     // 对于 401 错误，即使有后端消息也要执行登出逻辑
     if (status === 401) {
       userStore.logout()
-      router.push('/login')
+      userStore.openLoginModal()
     }
 
     ElMessage({

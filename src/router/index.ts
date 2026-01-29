@@ -4,8 +4,6 @@ import { useUserStore } from '@/store/modules/user'
 
 // 导入路由组件
 const Layout = () => import('@/layout/index.vue')
-const Login = () => import('@/views/login/index.vue')
-const Register = () => import('@/views/register/index.vue')
 const NotFound = () => import('@/views/404/index.vue')
 
 // Home and Note pages
@@ -100,22 +98,6 @@ const routes: Array<RouteRecordRaw> = [
     ],
   },
   {
-    path: '/login',
-    name: 'Login',
-    component: Login,
-    meta: {
-      title: '登录 - 旅行笔记',
-    },
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: Register,
-    meta: {
-      title: '注册 - 旅行笔记',
-    },
-  },
-  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: NotFound,
@@ -135,7 +117,7 @@ const router = createRouter({
 })
 
 // 全局前置守卫：路由跳转前的鉴权判断
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   // 设置页面标题
   if (to.meta.title) {
     document.title = to.meta.title as string
@@ -150,13 +132,9 @@ router.beforeEach((to, from, next) => {
       // 已登录，允许访问
       next()
     } else {
-      // 未登录，跳转到登录页
-      ElMessage.warning('请先登录')
-      next('/login')
+      userStore.openLoginModal()
+      next(false) // 中断当前导航
     }
-  } else if (to.path === '/login' && isLogin) {
-    // 已登录用户访问登录页，重定向到首页
-    next('/')
   } else {
     // 不需要登录认证的页面，直接访问
     next()

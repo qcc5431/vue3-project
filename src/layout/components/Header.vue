@@ -23,8 +23,8 @@
     <div class="header__right">
       <!-- 未登录状态 -->
       <template v-if="!isLogin">
-        <el-button @click="router.push('/login')">登录</el-button>
-        <el-button type="primary" @click="router.push('/register')">注册</el-button>
+        <el-button @click="userStore.openLoginModal()">登录</el-button>
+        <el-button type="primary" @click="userStore.openRegisterModal()">注册</el-button>
       </template>
 
       <!-- 已登录状态 -->
@@ -46,10 +46,7 @@
         <el-dropdown trigger="click" @command="handleCommand">
           <div class="header-user">
             <el-avatar :size="36" class="user-avatar">
-              <img
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=traveler01"
-                alt="avatar"
-              />
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=traveler01" alt="avatar" />
             </el-avatar>
           </div>
           <template #dropdown>
@@ -71,14 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Location,
-  Search,
-  EditPen,
-  Bell,
-  User,
-  SwitchButton,
-} from '@element-plus/icons-vue'
+import { Location, Search, EditPen, Bell, User, SwitchButton } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/modules/user'
 
 const router = useRouter()
@@ -120,10 +110,13 @@ const handleLogout = () => {
     type: 'warning',
   })
     .then(() => {
-      // 清除登录状态
-      localStorage.removeItem('token')
+      // 调用 userStore 的退出登录方法
+      userStore.logout()
       ElMessage.success('已退出登录')
-      router.push('/login')
+      // 如果当前页面需要权限，则跳转到首页
+      if (router.currentRoute.value.meta.requiresAuth) {
+        router.push('/')
+      }
     })
     .catch(() => {})
 }
@@ -191,7 +184,7 @@ const handleLogout = () => {
         }
 
         &:hover {
-          background: darken($background-color, 3%);
+          background: color.adjust($background-color, $lightness: -3%);
         }
 
         &.is-focus {
@@ -205,7 +198,6 @@ const handleLogout = () => {
   &__right {
     display: flex;
     align-items: center;
-    gap: 16px;
 
     .el-button {
       background: transparent;
@@ -242,7 +234,7 @@ const handleLogout = () => {
 
   &:hover {
     background: $background-color;
-    color: darken($primary-color, 10%);
+    color: color.adjust($primary-color, $lightness: -10%);
   }
 }
 

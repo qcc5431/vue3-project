@@ -17,12 +17,16 @@
         </router-view>
       </main>
     </div>
+
+    <!-- 登录注册弹窗 -->
+    <AuthModal />
   </div>
 </template>
 
 <script setup lang="ts">
 import Header from './components/Header.vue'
 import CategorySidebar from './components/CategorySidebar.vue'
+import AuthModal from '@/components/AuthModal.vue'
 
 const route = useRoute()
 </script>

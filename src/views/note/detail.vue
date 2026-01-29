@@ -45,14 +45,22 @@
 
         <!-- 评论输入 - 只有登录后才显示 -->
         <div v-if="isLogin">
-          <CommentInput :reply-to="replyToUser" @submit="handleCommentSubmit" @cancel="cancelReply" />
+          <CommentInput
+            :reply-to="replyToUser"
+            @submit="handleCommentSubmit"
+            @cancel="cancelReply"
+          />
         </div>
         <div v-else class="login-tip">
-          <el-button type="primary" @click="router.push('/login')">登录后发表评论</el-button>
+          <el-button type="primary" @click="userStore.openLoginModal()">登录后发表评论</el-button>
         </div>
 
         <!-- 评论列表 -->
-        <CommentList :comments="socialStore.comments" @reply="handleCommentReply" @like="handleCommentLike" />
+        <CommentList
+          :comments="socialStore.comments"
+          @reply="handleCommentReply"
+          @like="handleCommentLike"
+        />
       </el-card>
     </div>
 
@@ -75,7 +83,6 @@ import CommentList from '@/components/CommentList.vue'
 import CommentInput from '@/components/CommentInput.vue'
 
 const route = useRoute()
-const router = useRouter()
 const noteStore = useNoteStore()
 const socialStore = useSocialStore()
 const userStore = useUserStore()
@@ -105,8 +112,7 @@ const formatTime = (time: string): string => {
 // 关注
 const handleFollow = () => {
   if (!isLogin.value) {
-    ElMessage.warning('请先登录')
-    router.push('/login')
+    userStore.openLoginModal()
     return
   }
   if (!note.value) return
@@ -117,8 +123,7 @@ const handleFollow = () => {
 // 点赞
 const handleLike = () => {
   if (!isLogin.value) {
-    ElMessage.warning('请先登录')
-    router.push('/login')
+    userStore.openLoginModal()
     return
   }
   if (!note.value) return
@@ -128,8 +133,7 @@ const handleLike = () => {
 // 收藏
 const handleCollect = () => {
   if (!isLogin.value) {
-    ElMessage.warning('请先登录')
-    router.push('/login')
+    userStore.openLoginModal()
     return
   }
   if (!note.value) return
@@ -139,8 +143,7 @@ const handleCollect = () => {
 // 滚动到评论区
 const scrollToComment = () => {
   if (!isLogin.value) {
-    ElMessage.warning('请先登录')
-    router.push('/login')
+    userStore.openLoginModal()
     return
   }
   // 简单实现，可以优化为平滑滚动到评论输入框

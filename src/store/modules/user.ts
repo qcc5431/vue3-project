@@ -5,12 +5,16 @@ import type { LoginParams, UserInfo } from '@/api/types/user'
 interface UserState {
   token: string | null
   userInfo: UserInfo | null
+  authModalVisible: boolean
+  authModalType: 'login' | 'register'
 }
 
 export const useUserStore = defineStore('user', {
   state: (): UserState => ({
     token: localStorage.getItem('token') || null,
     userInfo: null,
+    authModalVisible: false,
+    authModalType: 'login',
   }),
 
   getters: {
@@ -68,6 +72,28 @@ export const useUserStore = defineStore('user', {
       this.token = null
       this.userInfo = null
       localStorage.removeItem('token')
+    },
+
+    // 打开登录弹窗
+    openLoginModal() {
+      this.authModalType = 'login'
+      this.authModalVisible = true
+    },
+
+    // 打开注册弹窗
+    openRegisterModal() {
+      this.authModalType = 'register'
+      this.authModalVisible = true
+    },
+
+    // 关闭弹窗
+    closeAuthModal() {
+      this.authModalVisible = false
+    },
+
+    // 切换弹窗模式
+    switchAuthMode(type: 'login' | 'register') {
+      this.authModalType = type
     },
   },
 })

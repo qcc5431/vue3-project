@@ -30,7 +30,7 @@ export default defineConfig({
           if (filePath.includes('assets/styles/index.scss')) {
             return content
           }
-          return `@use "@/assets/styles" as *;\n${content}`
+          return `@use "sass:color";\n@use "@/assets/styles" as *;\n${content}`
         },
       },
     },

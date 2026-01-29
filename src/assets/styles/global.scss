@@ -69,3 +69,21 @@ a {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* 全局样式：用于穿透组件边界，解决 el-dialog 渲染在 body 导致的问题 */
+.auth-dialog.el-dialog {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  --el-dialog-bg-color: transparent !important;
+  --el-dialog-box-shadow: none !important;
+  --el-dialog-padding-primary: 0 !important;
+
+  .el-dialog__header {
+    display: none !important;
+  }
+
+  .el-dialog__body {
+    padding: 0 !important;
+  }
+}
