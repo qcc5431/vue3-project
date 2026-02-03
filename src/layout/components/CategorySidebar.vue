@@ -60,8 +60,10 @@ const isActive = (path: string) => {
 <style lang="scss" scoped>
 .category-sidebar {
   width: 200px;
-  background: #f5f7f6;
-  border-right: 1px solid #d4dcd7;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
   padding: 24px 0;
   flex-shrink: 0;
 
@@ -75,14 +77,14 @@ const isActive = (path: string) => {
       align-items: center;
       gap: 12px;
       padding: 12px 24px;
-      color: #6b7d73;
+      color: rgba(255, 255, 255, 0.9);
       text-decoration: none;
-      transition: all 0.2s;
+      transition: all 0.3s;
       position: relative;
 
       .el-icon {
-        color: #8fa998;
-        transition: color 0.2s;
+        color: rgba(255, 255, 255, 0.8);
+        transition: all 0.3s;
       }
 
       &::before {
@@ -92,27 +94,28 @@ const isActive = (path: string) => {
         top: 0;
         bottom: 0;
         width: 3px;
-        background: linear-gradient(180deg, #7a9d89 0%, #8fa998 100%);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
         transform: scaleY(0);
-        transition: transform 0.2s;
+        transition: transform 0.3s;
       }
 
       &:hover {
-        background: rgba(122, 157, 137, 0.1);
-        color: #5d7d6b;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
 
         .el-icon {
-          color: #7a9d89;
+          color: #fff;
+          transform: scale(1.1);
         }
       }
 
       &.active {
-        color: #5d7d6b;
-        font-weight: 500;
-        background: rgba(122, 157, 137, 0.15);
+        color: #fff;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.25);
 
         .el-icon {
-          color: #7a9d89;
+          color: #fff;
         }
 
         &::before {
@@ -122,6 +125,25 @@ const isActive = (path: string) => {
 
       .nav-text {
         font-size: 15px;
+      }
+    }
+  }
+}
+
+// 响应式适配
+@media (max-width: 768px) {
+  .category-sidebar {
+    width: 60px;
+    padding: 16px 0;
+
+    .sidebar-nav {
+      .nav-item {
+        padding: 12px;
+        justify-content: center;
+
+        .nav-text {
+          display: none;
+        }
       }
     }
   }

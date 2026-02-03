@@ -1,13 +1,13 @@
 <template>
   <div class="layout">
+    <!-- 背景图片 -->
+    <div class="layout-background"></div>
+
     <!-- 顶部栏 -->
     <Header />
 
     <!-- 主体区域 -->
     <div class="layout-body">
-      <!-- 左侧分类栏 -->
-      <CategorySidebar />
-
       <!-- 内容区 -->
       <main class="layout-content">
         <router-view v-slot="{ Component }">
@@ -25,7 +25,6 @@
 
 <script setup lang="ts">
 import Header from './components/Header.vue'
-import CategorySidebar from './components/CategorySidebar.vue'
 import AuthModal from '@/components/AuthModal.vue'
 
 const route = useRoute()
@@ -33,23 +32,42 @@ const route = useRoute()
 
 <style lang="scss" scoped>
 .layout {
-  min-height: 100vh;
-  background: #e8ebe9;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  .layout-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('@/assets/images/back3.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
 
   .layout-body {
     display: flex;
     flex: 1;
-    max-width: 1400px;
     width: 100%;
-    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
   }
 
   .layout-content {
     flex: 1;
-    padding: 24px;
+    padding: 0;
     min-width: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    overflow: hidden;
   }
 }
 

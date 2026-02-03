@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AuthModal: typeof import('./src/components/AuthModal.vue')['default']
+    CarouselNoteCard: typeof import('./src/components/CarouselNoteCard.vue')['default']
     CommentInput: typeof import('./src/components/CommentInput.vue')['default']
     CommentList: typeof import('./src/components/CommentList.vue')['default']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
@@ -20,6 +21,8 @@ declare module 'vue' {
     ElBreadcrumbItem: typeof import('element-plus/es')['ElBreadcrumbItem']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
+    ElCarousel: typeof import('element-plus/es')['ElCarousel']
+    ElCarouselItem: typeof import('element-plus/es')['ElCarouselItem']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElDivider: typeof import('element-plus/es')['ElDivider']

@@ -6,13 +6,56 @@
         <el-icon :size="28" color="#ff6b6b"><Location /></el-icon>
         <span class="logo-text">旅行笔记</span>
       </router-link>
+
+      <!-- 导航菜单 -->
+      <nav class="header-nav">
+        <router-link
+          v-for="item in navItems"
+          :key="item.path"
+          :to="item.path"
+          class="nav-link"
+          :class="{ active: isActive(item.path) }"
+        >
+          {{ item.title }}
+        </router-link>
+      </nav>
+
+      <!-- 排序选项 -->
+      <div class="sort-options">
+        <el-tooltip content="推荐" placement="bottom">
+          <div
+            class="sort-icon"
+            :class="{ active: sortType === 'recommend' }"
+            @click="changeSortType('recommend')"
+          >
+            <el-icon><StarFilled /></el-icon>
+          </div>
+        </el-tooltip>
+        <el-tooltip content="最新" placement="bottom">
+          <div
+            class="sort-icon"
+            :class="{ active: sortType === 'latest' }"
+            @click="changeSortType('latest')"
+          >
+            <el-icon><Clock /></el-icon>
+          </div>
+        </el-tooltip>
+        <el-tooltip content="最热" placement="bottom">
+          <div
+            class="sort-icon"
+            :class="{ active: sortType === 'hot' }"
+            @click="changeSortType('hot')"
+          >
+            <el-icon><Trophy /></el-icon>
+          </div>
+        </el-tooltip>
+      </div>
     </div>
 
     <!-- 搜索框 -->
     <div class="header__center">
       <el-input
         v-model="searchKeyword"
-        placeholder="搜索笔记、用户..."
         :prefix-icon="Search"
         clearable
         @keyup.enter="handleSearch"
@@ -23,8 +66,13 @@
     <div class="header__right">
       <!-- 未登录状态 -->
       <template v-if="!isLogin">
-        <el-button @click="userStore.openLoginModal()">登录</el-button>
-        <el-button type="primary" @click="userStore.openRegisterModal()">注册</el-button>
+        <el-tooltip content="登录/注册" placement="bottom">
+          <div class="user-icon" @click="userStore.openLoginModal()">
+            <el-avatar :size="36" class="user-avatar-icon">
+              <el-icon><User /></el-icon>
+            </el-avatar>
+          </div>
+        </el-tooltip>
       </template>
 
       <!-- 已登录状态 -->
@@ -68,12 +116,60 @@
 </template>
 
 <script setup lang="ts">
-import { Location, Search, EditPen, Bell, User, SwitchButton } from '@element-plus/icons-vue'
+import { Location, Search, EditPen, Bell, User, SwitchButton, HomeFilled, Compass, Star, Document, StarFilled, Clock, Trophy } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/modules/user'
+import type { Component } from 'vue'
+import type { NoteSortType } from '@/api/types/note'
+import { useNoteStore } from '@/store/modules/note'
+
+interface NavItem {
+  path: string
+  title: string
+  icon: Component
+}
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
+const noteStore = useNoteStore()
 const searchKeyword = ref('')
+const sortType = ref<NoteSortType>('recommend')
+
+// 导航菜单项
+const navItems: NavItem[] = [
+  {
+    path: '/',
+    title: '首页',
+    icon: HomeFilled,
+  },
+  {
+    path: '/following',
+    title: '关注',
+    icon: Compass,
+  },
+  {
+    path: '/favorites',
+    title: '收藏',
+    icon: Star,
+  },
+  {
+    path: '/my-notes',
+    title: '我的笔记',
+    icon: Document,
+  },
+]
+
+// 判断导航是否激活
+const isActive = (path: string) => {
+  return route.path === path
+}
+
+// 改变排序方式
+const changeSortType = (type: NoteSortType) => {
+  sortType.value = type
+  noteStore.page = 1
+  noteStore.fetchNotes({ sortType: type })
+}
 
 // 登录状态
 const isLogin = computed(() => userStore.isLogin)
@@ -125,9 +221,11 @@ const handleLogout = () => {
 <style lang="scss" scoped>
 .header {
   height: 60px;
-  background: $header-bg;
-  border-bottom: 1px solid $border-color;
-  box-shadow: 0 2px 8px rgba(109, 186, 122, 0.08);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: none;
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -137,6 +235,10 @@ const handleLogout = () => {
   z-index: 100;
 
   &__left {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+
     .logo {
       display: flex;
       align-items: center;
@@ -149,16 +251,77 @@ const handleLogout = () => {
       }
 
       .el-icon {
-        color: $primary-color;
+        color: #fff;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
       }
 
       .logo-text {
         font-size: 20px;
         font-weight: 600;
-        background: $primary-gradient;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .nav-link {
+        padding: 8px 20px;
+        color: rgba(255, 255, 255);
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+
+        &:hover {
+          color: #fff;
+          transform: translateY(-1px);
+        }
+
+        &.active {
+          color: #fff;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .sort-options {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-left: 24px;
+      padding-left: 24px;
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+
+      .sort-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+        font-size: 24px;
+
+        .el-icon {
+          font-size: 28px;
+          font-weight: bold;
+        }
+
+        &:hover {
+          color: #fff;
+          transform: scale(1.2);
+        }
+
+        &.active {
+          color: #fff;
+          font-weight: 900;
+        }
       }
     }
   }
@@ -170,26 +333,31 @@ const handleLogout = () => {
 
     :deep(.el-input) {
       .el-input__wrapper {
-        background: $background-color;
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         border-radius: 20px;
         box-shadow: none;
         padding: 4px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
 
         .el-input__inner {
-          color: $text-primary;
+          color: #fff;
 
           &::placeholder {
-            color: $secondary-color;
+            color: rgba(255, 255, 255, 0.7);
           }
         }
 
         &:hover {
-          background: color.adjust($background-color, $lightness: -3%);
+          background: rgba(255, 255, 255, 0.35);
+          border-color: rgba(255, 255, 255, 0.5);
         }
 
         &.is-focus {
-          background: #fff;
-          box-shadow: 0 0 0 2px rgba(109, 186, 122, 0.3);
+          background: rgba(255, 255, 255, 0.3);
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+          border-color: rgba(255, 255, 255, 0.6);
         }
       }
     }
@@ -198,23 +366,69 @@ const handleLogout = () => {
   &__right {
     display: flex;
     align-items: center;
+    gap: 12px;
 
-    .el-button {
-      background: transparent;
-      border: 1px solid $primary-color;
-      color: $primary-color;
+    .user-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      .user-avatar-icon {
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.2) !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .el-icon {
+          color: #fff;
+          font-size: 20px;
+        }
+      }
 
       &:hover {
-        background: rgba(109, 186, 122, 0.1);
+        transform: scale(1.1);
+
+        .user-avatar-icon {
+          border-color: rgba(255, 255, 255, 1);
+          background: rgba(255, 255, 255, 0.3) !important;
+        }
+      }
+    }
+
+    .el-button {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      font-weight: 500;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
 
       &.el-button--primary {
-        background: $primary-gradient;
-        border: none;
+        background: rgba(109, 186, 122, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         color: #fff;
 
         &:hover {
-          opacity: 0.9;
+          background: rgba(109, 186, 122, 0.85);
+          border-color: rgba(255, 255, 255, 0.5);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(109, 186, 122, 0.3);
         }
       }
     }
@@ -229,12 +443,13 @@ const handleLogout = () => {
   justify-content: center;
   border-radius: 50%;
   cursor: pointer;
-  color: $primary-color;
+  color: #fff;
   transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.15);
 
   &:hover {
-    background: $background-color;
-    color: color.adjust($primary-color, $lightness: -10%);
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
   }
 }
 
@@ -249,8 +464,8 @@ const handleLogout = () => {
   }
 
   .user-avatar {
-    border: 2px solid $primary-color;
-    box-shadow: 0 2px 8px rgba(109, 186, 122, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 
     img {
       width: 100%;
@@ -262,10 +477,12 @@ const handleLogout = () => {
 
 :deep(.el-dropdown-menu) {
   padding: 8px;
-  border-radius: 8px;
-  border: 1px solid $border-color;
-  box-shadow: 0 4px 12px rgba(109, 186, 122, 0.15);
-  background: $header-bg;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 
   .el-dropdown-menu__item {
     padding: 10px 16px;
