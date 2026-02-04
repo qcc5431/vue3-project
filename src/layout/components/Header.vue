@@ -50,6 +50,28 @@
           </div>
         </el-tooltip>
       </div>
+
+      <!-- 视图切换 -->
+      <div class="view-toggle">
+        <el-tooltip content="走马灯" placement="bottom">
+          <div
+            class="view-icon"
+            :class="{ active: viewMode === 'carousel' }"
+            @click="changeViewMode('carousel')"
+          >
+            <el-icon><Switch /></el-icon>
+          </div>
+        </el-tooltip>
+        <el-tooltip content="瀑布流" placement="bottom">
+          <div
+            class="view-icon"
+            :class="{ active: viewMode === 'waterfall' }"
+            @click="changeViewMode('waterfall')"
+          >
+            <el-icon><Grid /></el-icon>
+          </div>
+        </el-tooltip>
+      </div>
     </div>
 
     <!-- 搜索框 -->
@@ -116,7 +138,23 @@
 </template>
 
 <script setup lang="ts">
-import { Location, Search, EditPen, Bell, User, SwitchButton, HomeFilled, Compass, Star, Document, StarFilled, Clock, Trophy } from '@element-plus/icons-vue'
+import {
+  Location,
+  Search,
+  EditPen,
+  Bell,
+  User,
+  SwitchButton,
+  HomeFilled,
+  Compass,
+  Star,
+  Document,
+  StarFilled,
+  Clock,
+  Trophy,
+  Switch,
+  Grid,
+} from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/modules/user'
 import type { Component } from 'vue'
 import type { NoteSortType } from '@/api/types/note'
@@ -134,6 +172,7 @@ const userStore = useUserStore()
 const noteStore = useNoteStore()
 const searchKeyword = ref('')
 const sortType = ref<NoteSortType>('recommend')
+const viewMode = ref<'carousel' | 'waterfall'>('carousel')
 
 // 导航菜单项
 const navItems: NavItem[] = [
@@ -169,6 +208,13 @@ const changeSortType = (type: NoteSortType) => {
   sortType.value = type
   noteStore.page = 1
   noteStore.fetchNotes({ sortType: type })
+}
+
+// 改变视图模式
+const changeViewMode = (mode: 'carousel' | 'waterfall') => {
+  viewMode.value = mode
+  // 触发视图切换事件
+  window.dispatchEvent(new CustomEvent('change-view-mode', { detail: mode }))
 }
 
 // 登录状态
@@ -300,6 +346,40 @@ const handleLogout = () => {
       border-left: 1px solid rgba(255, 255, 255, 0.2);
 
       .sort-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+        font-size: 24px;
+
+        .el-icon {
+          font-size: 28px;
+          font-weight: bold;
+        }
+
+        &:hover {
+          color: #fff;
+          transform: scale(1.2);
+        }
+
+        &.active {
+          color: #fff;
+          font-weight: 900;
+        }
+      }
+    }
+
+    .view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-left: 24px;
+      padding-left: 24px;
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+
+      .view-icon {
         display: flex;
         align-items: center;
         justify-content: center;

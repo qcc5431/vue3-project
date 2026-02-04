@@ -319,8 +319,8 @@ const handleRegister = async () => {
   width: 100%;
   min-height: 500px;
   background: $background-white;
-  border-radius: 16px; // 确保圆角在卡片上
-  box-shadow: 0 8px 32px rgba(109, 186, 122, 0.15); // 把原页面的阴影还给卡片
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 }
 
@@ -330,12 +330,13 @@ const handleRegister = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $primary-gradient;
+  background: linear-gradient(135deg, rgba(126, 190, 77, 0.8) 0%, rgba(109, 186, 122, 0.3) 100%);
   padding: $spacing-xl;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
 
   .brand-info {
     text-align: center;
-    color: $background-white;
+    color: #fff;
 
     .logo-icon {
       margin-bottom: $spacing-lg;
@@ -343,6 +344,7 @@ const handleRegister = async () => {
 
       .el-icon {
         color: rgba(255, 255, 255, 0.95);
+        font-size: 70px;
       }
     }
 
@@ -351,7 +353,8 @@ const handleRegister = async () => {
       font-weight: 700;
       margin-bottom: $spacing-md;
       letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.98);
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
     }
 
     .system-desc {
@@ -359,6 +362,7 @@ const handleRegister = async () => {
       opacity: 0.9;
       margin-bottom: $spacing-xs;
       line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
     }
   }
 }
@@ -478,6 +482,17 @@ const handleRegister = async () => {
   .auth-right {
     width: 100%;
     padding: $spacing-lg;
+  }
+}
+
+// Dialog 样式覆盖
+:deep(.auth-dialog) {
+  .el-dialog__header {
+    display: none;
+  }
+
+  .el-dialog__body {
+    padding: 0;
   }
 }
 

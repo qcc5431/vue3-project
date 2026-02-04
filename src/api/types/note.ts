@@ -12,6 +12,7 @@ export interface Note {
   title: string
   content: string // Markdown格式
   coverImage?: string // 封面图
+  coverImageAspectRatio?: number // 封面图宽高比 (width/height)
   images: string[] // 笔记中的图片列表
   authorId: string
   authorName: string

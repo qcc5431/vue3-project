@@ -1,8 +1,17 @@
 <template>
   <el-card :body-style="{ padding: '0px' }" class="note-card" @click="handleClick">
     <!-- 封面图 -->
-    <div v-if="note.coverImage" class="note-cover">
-      <el-image :src="note.coverImage" fit="cover" lazy />
+    <div
+      v-if="note.coverImage"
+      class="note-cover"
+      :style="imageHeight ? { height: imageHeight + 'px' } : {}"
+    >
+      <el-skeleton v-if="!imageLoaded" animated class="image-skeleton">
+        <template #template>
+          <el-skeleton-item variant="image" class="skeleton-image" />
+        </template>
+      </el-skeleton>
+      <el-image v-show="imageLoaded" :src="note.coverImage" fit="cover" @load="handleImageLoad" />
     </div>
 
     <div class="note-content">
@@ -11,12 +20,7 @@
 
       <!-- 作者信息 -->
       <div class="note-author">
-        <UserAvatar
-          :user-id="note.authorId"
-          :avatar="note.authorAvatar"
-          :size="24"
-          @click.stop
-        />
+        <UserAvatar :user-id="note.authorId" :avatar="note.authorAvatar" :size="24" @click.stop />
         <span class="author-name">{{ note.authorName }}</span>
       </div>
 
@@ -46,10 +50,21 @@ import UserAvatar from './UserAvatar.vue'
 
 interface Props {
   note: Note
+  imageHeight?: number // 小红书式固定高度
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  imageHeight: 0, // 0 表示自适应
+})
 const router = useRouter()
+
+// 图片加载状态
+const imageLoaded = ref(false)
+
+// 图片加载完成
+const handleImageLoad = () => {
+  imageLoaded.value = true
+}
 
 // 格式化数字
 const formatNumber = (num: number): string => {
@@ -85,12 +100,33 @@ const handleClick = () => {
 
   .note-cover {
     width: 100%;
-    height: 200px;
     overflow: hidden;
+    position: relative;
+    background: #f5f7f6;
+
+    .image-skeleton {
+      width: 100%;
+      height: 100%;
+    }
+
+    .skeleton-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
     :deep(.el-image) {
       width: 100%;
       height: 100%;
+      display: block;
+    }
+
+    :deep(.el-image__inner) {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 

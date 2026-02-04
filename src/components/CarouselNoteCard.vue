@@ -18,12 +18,7 @@
 
       <!-- 作者信息 -->
       <div class="card-author">
-        <UserAvatar
-          :user-id="note.authorId"
-          :avatar="note.authorAvatar"
-          :size="36"
-          @click.stop
-        />
+        <UserAvatar :user-id="note.authorId" :avatar="note.authorAvatar" :size="36" @click.stop />
         <div class="author-info">
           <span class="author-name">{{ note.authorName }}</span>
           <span class="publish-time">{{ formatTime(note.createdAt) }}</span>
@@ -105,21 +100,23 @@ const handleClick = () => {
 <style lang="scss" scoped>
 .carousel-note-card {
   display: flex;
+  flex-direction: column;
   height: 100%;
-  background: rgba(255, 255,255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
-  border: 1px solid rgba(255, 255,255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
   pointer-events: auto;
 
   .card-cover {
-    width: 45%;
+    width: 100%;
+    height: 55%;
     flex-shrink: 0;
     overflow: hidden;
 
@@ -142,7 +139,7 @@ const handleClick = () => {
 
   .card-content {
     flex: 1;
-    padding: 30px 30px 30px 20px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -157,7 +154,7 @@ const handleClick = () => {
     font-size: 28px;
     font-weight: 700;
     color: #fff;
-    margin: 0 0 24px 0;
+    margin: 0 0 16px 0;
     line-height: 1.4;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -172,7 +169,7 @@ const handleClick = () => {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 
     .author-info {
       display: flex;
@@ -198,12 +195,12 @@ const handleClick = () => {
     font-size: 15px;
     line-height: 1.8;
     color: rgba(255, 255, 255, 1);
-    margin: 0 0 24px 0;
+    margin: 0 0 12px 0;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   }
@@ -231,14 +228,8 @@ const handleClick = () => {
 // 响应式适配
 @media (max-width: 1200px) {
   .carousel-note-card {
-    height: 350px;
-
-    .card-cover {
-      width: 40%;
-    }
-
     .card-content {
-      padding: 32px;
+      padding: 20px;
     }
 
     .card-title {
@@ -249,16 +240,12 @@ const handleClick = () => {
 
 @media (max-width: 768px) {
   .carousel-note-card {
-    flex-direction: column;
-    height: auto;
-
     .card-cover {
-      width: 100%;
-      height: 250px;
+      height: 200px;
     }
 
     .card-content {
-      padding: 24px;
+      padding: 20px;
     }
 
     .card-title {

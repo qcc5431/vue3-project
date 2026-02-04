@@ -11,6 +11,8 @@ interface NoteState {
   pageSize: number
   sortType: NoteSortType
   loading: boolean
+  preloading: boolean // 预加载状态
+  hasPreloaded: boolean // 是否已预加载下一批
 }
 
 export const useNoteStore = defineStore('note', {
@@ -19,9 +21,11 @@ export const useNoteStore = defineStore('note', {
     currentNote: null,
     total: 0,
     page: 1,
-    pageSize: 10,
+    pageSize: 20,
     sortType: 'recommend',
     loading: false,
+    preloading: false,
+    hasPreloaded: false,
   }),
 
   getters: {
@@ -67,6 +71,12 @@ export const useNoteStore = defineStore('note', {
 
     // 加载更多笔记
     async loadMore() {
+      // 如果已经预加载了，就不需要再加载了
+      if (this.hasPreloaded) {
+        this.hasPreloaded = false
+        return
+      }
+
       this.page += 1
       this.loading = true
       try {
@@ -85,6 +95,41 @@ export const useNoteStore = defineStore('note', {
         ElMessage.error('加载更多失败')
       } finally {
         this.loading = false
+      }
+    },
+
+    // 预加载下一批数据
+    async preloadNext() {
+      // 如果已经预加载或正在加载,则不重复加载
+      if (this.hasPreloaded || this.preloading || this.loading) {
+        return
+      }
+
+      // 如果已经加载所有数据,则不预加载
+      if (this.notes.length >= this.total) {
+        return
+      }
+
+      this.preloading = true
+      try {
+        const nextPage = this.page + 1
+        const response = await noteApi.getNoteList({
+          page: nextPage,
+          pageSize: this.pageSize,
+          sortType: this.sortType,
+        })
+
+        if (response.code === 200) {
+          // 将预加载的数据追加到列表
+          this.notes.push(...response.data.list)
+          this.total = response.data.total
+          this.page = nextPage // 更新页码
+          this.hasPreloaded = true // 标记已预加载
+        }
+      } catch (error) {
+        console.error('预加载失败:', error)
+      } finally {
+        this.preloading = false
       }
     },
 
@@ -234,6 +279,8 @@ export const useNoteStore = defineStore('note', {
       this.page = 1
       this.sortType = 'recommend'
       this.loading = false
+      this.preloading = false
+      this.hasPreloaded = false
     },
   },
 })

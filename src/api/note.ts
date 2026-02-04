@@ -16,7 +16,14 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 export const getNoteList = async (params: GetNoteListParams = {}): Promise<NoteListResponse> => {
   await delay(300)
 
-  const { page = 1, pageSize = 10, sortType = 'recommend', authorId, isFollowing, isCollected } = params
+  const {
+    page = 1,
+    pageSize = 20,
+    sortType = 'recommend',
+    authorId,
+    isFollowing,
+    isCollected,
+  } = params
 
   let filteredNotes = [...mockNotes]
 
