@@ -18,11 +18,8 @@
 
       <!-- 作者信息 -->
       <div class="card-author">
-        <UserAvatar :user-id="note.authorId" :avatar="note.authorAvatar" :size="36" @click.stop />
-        <div class="author-info">
-          <span class="author-name">{{ note.authorName }}</span>
-          <span class="publish-time">{{ formatTime(note.createdAt) }}</span>
-        </div>
+        <UserAvatar :user-id="note.authorId" :avatar="note.authorAvatar" :size="32" @click.stop />
+        <span class="author-name">{{ note.authorName }}</span>
       </div>
 
       <!-- 简介 -->
@@ -68,27 +65,6 @@ const formatNumber = (num: number): string => {
     return (num / 1000).toFixed(1) + 'k'
   }
   return num.toString()
-}
-
-// 格式化时间
-const formatTime = (time: string): string => {
-  const date = new Date(time)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-
-  if (days === 0) {
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    if (hours === 0) {
-      const minutes = Math.floor(diff / (1000 * 60))
-      return minutes <= 1 ? '刚刚' : `${minutes}分钟前`
-    }
-    return `${hours}小时前`
-  }
-  if (days < 7) {
-    return `${days}天前`
-  }
-  return date.toLocaleDateString('zh-CN')
 }
 
 // 点击卡片跳转到详情页
@@ -168,25 +144,14 @@ const handleClick = () => {
   .card-author {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-
-    .author-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+    gap: 10px;
+    margin-bottom: 16px;
 
     .author-name {
       font-size: 16px;
       font-weight: 600;
       color: #fff;
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .publish-time {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.8);
     }
   }
 
@@ -195,12 +160,12 @@ const handleClick = () => {
     font-size: 15px;
     line-height: 1.8;
     color: rgba(255, 255, 255, 1);
-    margin: 0 0 12px 0;
+    margin: 0 0 16px 0;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   }
