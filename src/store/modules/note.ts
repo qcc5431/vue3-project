@@ -43,6 +43,7 @@ export const useNoteStore = defineStore('note', {
       authorId?: string
       isFollowing?: boolean
       isCollected?: boolean
+      folderId?: string
     }) {
       this.loading = true
       try {

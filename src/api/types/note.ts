@@ -55,6 +55,7 @@ export interface GetNoteListParams {
   authorId?: string // 指定作者ID
   isFollowing?: boolean // 是否只看关注的
   isCollected?: boolean // 是否只看收藏的
+  folderId?: string // 文件夹ID (收藏时筛选文件夹)
 }
 
 // 笔记列表响应

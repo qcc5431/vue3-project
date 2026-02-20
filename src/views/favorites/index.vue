@@ -1,58 +1,404 @@
 <template>
   <div class="favorites-page">
-    <div class="page-header">
-      <h2>我的收藏</h2>
-      <p>你收藏的精彩笔记</p>
+    <!-- 左侧文件夹列表 -->
+    <div class="sidebar">
+      <!-- 默认文件夹 -->
+      <div
+        class="folder-item default-folder"
+        :class="{ active: folderStore.currentFolderId === null }"
+        @click="selectFolder(null)"
+      >
+        <el-icon><Star /></el-icon>
+        <span class="folder-name">全部收藏</span>
+        <span class="folder-count">{{ folderStore.totalNoteCount }}</span>
+      </div>
+
+      <el-divider />
+
+      <!-- 自定义文件夹列表 -->
+      <div class="custom-folders">
+        <div class="folder-header">
+          <span>我的文件夹</span>
+          <el-button
+            type="primary"
+            :icon="Plus"
+            size="small"
+            circle
+            @click="showCreateFolderDialog = true"
+          />
+        </div>
+
+        <div v-loading="folderStore.loading" class="folder-list">
+          <div
+            v-for="folder in folderStore.folders"
+            :key="folder.id"
+            class="folder-item"
+            :class="{ active: folderStore.currentFolderId === folder.id }"
+            @click="selectFolder(folder.id)"
+          >
+            <el-icon><FolderIcon /></el-icon>
+            <span class="folder-name">{{ folder.name }}</span>
+            <span class="folder-count">{{ folder.noteCount }}</span>
+            <div class="folder-actions">
+              <el-icon @click.stop="editFolder(folder)"><Edit /></el-icon>
+              <el-icon @click.stop="handleDeleteFolder(folder.id)"><Delete /></el-icon>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 笔记列表 -->
-    <div v-loading="noteStore.loading" class="notes-grid">
-      <NoteCard v-for="note in noteStore.notes" :key="note.id" :note="note" />
+    <!-- 右侧瀑布流列表 -->
+    <div class="content">
+      <WaterfallList
+        :items="noteStore.notes"
+        :loading="noteStore.loading"
+        :has-more="hasMore"
+        :total="noteStore.total"
+        empty-text="还没有收藏笔记"
+        @load-more="handleLoadMore"
+      >
+        <template #default="{ item, imageHeight }">
+          <NoteCard :note="item" :image-height="imageHeight" />
+        </template>
+      </WaterfallList>
     </div>
 
-    <!-- 空状态 -->
-    <el-empty v-if="!noteStore.loading && noteStore.notes.length === 0" description="还没有收藏笔记" />
+    <!-- 创建文件夹对话框 -->
+    <el-dialog v-model="showCreateFolderDialog" title="创建文件夹" width="400px">
+      <el-form @submit.prevent="handleCreateFolder">
+        <el-form-item label="文件夹名称">
+          <el-input
+            v-model="newFolderName"
+            maxlength="20"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showCreateFolderDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleCreateFolder">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑文件夹对话框 -->
+    <el-dialog v-model="showEditFolderDialog" title="编辑文件夹" width="400px">
+      <el-form @submit.prevent="handleEditFolder">
+        <el-form-item label="文件夹名称">
+          <el-input
+            v-model="editingFolderName"
+            placeholder="请输入文件夹名称"
+            maxlength="20"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditFolderDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleEditFolder">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useNoteStore } from '@/store/modules/note'
+import { useFolderStore } from '@/store/modules/folder'
+import type { Folder } from '@/api/types/folder'
 import NoteCard from '@/components/NoteCard.vue'
+import WaterfallList from '@/components/WaterfallList.vue'
+import { Star, Folder as FolderIcon, Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { ElMessageBox } from 'element-plus'
 
 const noteStore = useNoteStore()
+const folderStore = useFolderStore()
 
+// 对话框状态
+const showCreateFolderDialog = ref(false)
+const showEditFolderDialog = ref(false)
+const newFolderName = ref('')
+const editingFolderName = ref('')
+const editingFolderId = ref('')
+
+// 是否还有更多
+const hasMore = computed(() => {
+  return noteStore.notes.length < noteStore.total
+})
+
+// 选择文件夹
+const selectFolder = (folderId: string | null) => {
+  folderStore.setCurrentFolder(folderId)
+  noteStore.page = 1
+  noteStore.fetchNotes({
+    isCollected: true,
+    folderId: folderId || undefined,
+  })
+}
+
+// 创建文件夹
+const handleCreateFolder = async () => {
+  if (!newFolderName.value.trim()) {
+    ElMessage.warning('请输入文件夹名称')
+    return
+  }
+
+  const success = await folderStore.createFolder(newFolderName.value.trim())
+  if (success) {
+    showCreateFolderDialog.value = false
+    newFolderName.value = ''
+  }
+}
+
+// 编辑文件夹
+const editFolder = (folder: Folder) => {
+  editingFolderId.value = folder.id
+  editingFolderName.value = folder.name
+  showEditFolderDialog.value = true
+}
+
+// 确认编辑文件夹
+const handleEditFolder = async () => {
+  if (!editingFolderName.value.trim()) {
+    ElMessage.warning('请输入文件夹名称')
+    return
+  }
+
+  const success = await folderStore.updateFolder(
+    editingFolderId.value,
+    editingFolderName.value.trim(),
+  )
+  if (success) {
+    showEditFolderDialog.value = false
+    editingFolderName.value = ''
+    editingFolderId.value = ''
+  }
+}
+
+// 删除文件夹
+const handleDeleteFolder = async (folderId: string) => {
+  try {
+    await ElMessageBox.confirm('删除文件夹不会删除其中的笔记，确认删除？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await folderStore.deleteFolder(folderId)
+  } catch {
+    // 取消删除
+  }
+}
+
+// 加载更多
+const handleLoadMore = () => {
+  noteStore.loadMore()
+}
+
+// 初始化加载
 onMounted(() => {
+  // 加载文件夹列表
+  folderStore.fetchFolders()
+  // 加载收藏笔记（默认全部）
   noteStore.fetchNotes({ isCollected: true })
 })
 </script>
 
 <style lang="scss" scoped>
 .favorites-page {
-  max-width: 1200px;
-  margin: 0 auto;
+  display: flex;
+  gap: 24px;
+  padding: 20px 0 30px 0;
+  min-height: 100vh;
 
-  .page-header {
-    margin-bottom: 32px;
-    text-align: center;
+  // 左侧侧边栏
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 20px;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    margin-left: 10px;
 
-    h2 {
-      font-size: 28px;
-      font-weight: 600;
-      color: #333;
-      margin: 0 0 8px;
+    .el-divider {
+      margin: 16px 0;
+      background-color: rgba(255, 255, 255, 0.2);
     }
 
-    p {
-      color: #666;
-      font-size: 14px;
-      margin: 0;
+    // 默认文件夹
+    .default-folder {
+      margin-bottom: 8px;
+    }
+
+    // 文件夹项
+    .folder-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: rgba(255, 255, 255);
+      position: relative;
+
+      .el-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .folder-name {
+        flex: 1;
+        font-size: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .folder-count {
+        font-size: 12px;
+        color: rgba(255, 255, 255);
+        flex-shrink: 0;
+      }
+
+      .folder-actions {
+        display: none;
+        gap: 8px;
+        margin-left: 8px;
+
+        .el-icon {
+          font-size: 20px;
+          padding: 2px;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+          }
+        }
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+
+        .folder-actions {
+          display: flex;
+        }
+
+        .folder-count {
+          display: none;
+        }
+      }
+
+      &.active {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+        font-weight: 500;
+
+        .folder-count {
+          color: rgba(255, 255, 255);
+        }
+      }
+    }
+
+    // 文件夹头部
+    .folder-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px;
+
+      span {
+        font-size: 13px;
+        color: rgba(255, 255, 255);
+        font-weight: 500;
+      }
+
+      .el-button {
+        width: 28px;
+        height: 28px;
+        background: rgba(109, 186, 122, 0.3);
+        border: none;
+        color: #fff;
+
+        &:hover {
+          background: rgba(109, 186, 122, 0.6);
+          color: #fff;
+          transform: scale(1.1);
+        }
+      }
+    }
+
+    .folder-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
   }
 
-  .notes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+  // 右侧内容区
+  .content {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// 对话框样式
+:deep(.el-dialog) {
+  border-radius: 12px;
+
+  .el-dialog__footer {
+    .el-button {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+
+      &:not(.el-button--primary) {
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        color: #666;
+
+        &:hover {
+          background: #e8e8e8;
+          border-color: #d0d0d0;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      &.el-button--primary {
+        background: rgba(109, 186, 122, 0.7);
+        border: none;
+        color: #fff;
+
+        &:hover {
+          background: rgba(109, 186, 122, 0.85);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(109, 186, 122, 0.4);
+        }
+      }
+    }
+  }
+}
+
+// 响应式适配
+@media (max-width: 768px) {
+  .favorites-page {
+    flex-direction: column;
+    padding: 20px 12px;
+
+    .sidebar {
+      width: 100%;
+      position: relative;
+      top: 0;
+    }
   }
 }
 </style>
