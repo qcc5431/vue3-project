@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AuthModal: typeof import('./src/components/AuthModal.vue')['default']
+    BackToTop: typeof import('./src/components/BackToTop.vue')['default']
     CarouselNoteCard: typeof import('./src/components/CarouselNoteCard.vue')['default']
     CommentInput: typeof import('./src/components/CommentInput.vue')['default']
     CommentList: typeof import('./src/components/CommentList.vue')['default']

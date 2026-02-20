@@ -161,26 +161,38 @@ onMounted(() => {
 
 // 监听滚动加载更多
 onMounted(() => {
-  if (!containerRef.value) return
+  // 监听 layout-body 的滚动（向上查找滚动容器）
+  const findScrollContainer = (el: HTMLElement | null): HTMLElement | null => {
+    if (!el || el === document.body) return null
+    const overflowY = window.getComputedStyle(el).overflowY
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      return el
+    }
+    return findScrollContainer(el.parentElement)
+  }
+
+  const scrollContainer = findScrollContainer(containerRef.value || null)
+  if (!scrollContainer) return
 
   const handleScroll = () => {
     const container = containerRef.value
     if (!container) return
 
-    const scrollTop = container.scrollTop
-    const scrollHeight = container.scrollHeight
-    const clientHeight = container.clientHeight
+    // 使用 getBoundingClientRect 计算元素底部距离视口的距离
+    const rect = container.getBoundingClientRect()
+    const windowHeight = window.innerHeight
+    const bottomDistance = rect.bottom - windowHeight
 
     // 距离底部500px时触发加载
-    if (scrollHeight - scrollTop - clientHeight < 500 && props.hasMore && !props.loading) {
+    if (bottomDistance < 500 && props.hasMore && !props.loading) {
       emit('loadMore')
     }
   }
 
-  containerRef.value.addEventListener('scroll', handleScroll)
+  scrollContainer.addEventListener('scroll', handleScroll)
 
   onUnmounted(() => {
-    containerRef.value?.removeEventListener('scroll', handleScroll)
+    scrollContainer?.removeEventListener('scroll', handleScroll)
   })
 })
 </script>
@@ -189,9 +201,6 @@ onMounted(() => {
 .waterfall-container {
   position: relative;
   width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .waterfall-grid {

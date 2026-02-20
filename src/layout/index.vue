@@ -20,6 +20,9 @@
 
     <!-- 登录注册弹窗 -->
     <AuthModal />
+
+    <!-- 回到顶部按钮 -->
+    <BackToTop />
   </div>
 </template>
 
@@ -57,7 +60,16 @@ const route = useRoute()
     width: 100%;
     position: relative;
     z-index: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    // 隐藏滚动条但保持滚动功能
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+
+    &::-webkit-scrollbar {
+      display: none; /* Chrome Safari */
+    }
   }
 
   .layout-content {
@@ -67,7 +79,6 @@ const route = useRoute()
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
-    overflow: hidden;
   }
 }
 

@@ -100,7 +100,7 @@ const handleClick = () => {
 <style lang="scss" scoped>
 .carousel-note-card {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100%;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
@@ -115,8 +115,8 @@ const handleClick = () => {
   pointer-events: auto;
 
   .card-cover {
-    width: 100%;
-    height: 55%;
+    width: 45%;
+    height: 100%;
     flex-shrink: 0;
     overflow: hidden;
 
@@ -139,7 +139,7 @@ const handleClick = () => {
 
   .card-content {
     flex: 1;
-    padding: 24px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -229,7 +229,7 @@ const handleClick = () => {
 @media (max-width: 1200px) {
   .carousel-note-card {
     .card-content {
-      padding: 20px;
+      padding: 24px;
     }
 
     .card-title {
@@ -240,7 +240,10 @@ const handleClick = () => {
 
 @media (max-width: 768px) {
   .carousel-note-card {
+    flex-direction: column;
+
     .card-cover {
+      width: 100%;
       height: 200px;
     }
 
