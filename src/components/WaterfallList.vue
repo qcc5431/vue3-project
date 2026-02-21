@@ -16,7 +16,8 @@
           position: 'absolute',
           width: (positions[index]?.width || 0) + 'px',
           transform: `translate(${positions[index]?.left || 0}px, ${positions[index]?.top || 0}px)`,
-          transition: 'transform 0.3s ease-in-out',
+          transition: 'transform 0.3s ease-in-out, opacity 0.5s ease-out',
+          opacity: itemOpacity[index] ? 1 : 0,
         }"
         class="waterfall-item"
       >
@@ -66,6 +67,8 @@ const containerRef = ref<HTMLElement>()
 const positions = ref<Position[]>([])
 const cols = ref(4)
 const gridHeight = ref(0)
+const itemOpacity = ref<Record<number, boolean>>({})
+const isInitialLoad = ref(true) // 标记是否是初次加载
 
 // 获取项目key
 const getItemKey = (item: T): string => {
@@ -131,12 +134,42 @@ const calculateLayout = () => {
 
   positions.value = newPositions
   gridHeight.value = Math.max(0, ...columnHeights.map((h) => h - props.gap))
+
+  // 只在初次加载时添加淡入动画
+  if (isInitialLoad.value) {
+    nextTick(() => {
+      newPositions.forEach((_, index) => {
+        setTimeout(() => {
+          itemOpacity.value[index] = true
+        }, index * 30) // 减少延迟时间，从50ms改为30ms
+      })
+    })
+    isInitialLoad.value = false // 标记已完成初次加载
+  } else {
+    // 非初次加载，直接显示
+    nextTick(() => {
+      newPositions.forEach((_, index) => {
+        itemOpacity.value[index] = true
+      })
+    })
+  }
 }
 
 // 监听items变化
 watch(
   () => props.items,
-  () => {
+  (newItems, oldItems) => {
+    // 只有在数据完全替换时才重置（首次加载或切换页面）
+    if (oldItems && oldItems.length > 0 && newItems.length < oldItems.length) {
+      // 重置透明度和初始加载标志
+      itemOpacity.value = {}
+      isInitialLoad.value = true
+    } else if (oldItems && oldItems.length === 0 && newItems.length > 0) {
+      // 从空状态到有数据
+      itemOpacity.value = {}
+      isInitialLoad.value = true
+    }
+
     nextTick(() => {
       calculateLayout()
     })

@@ -28,22 +28,24 @@
           />
         </div>
 
-        <div v-loading="folderStore.loading" class="folder-list">
-          <div
-            v-for="folder in folderStore.folders"
-            :key="folder.id"
-            class="folder-item"
-            :class="{ active: folderStore.currentFolderId === folder.id }"
-            @click="selectFolder(folder.id)"
-          >
-            <el-icon><FolderIcon /></el-icon>
-            <span class="folder-name">{{ folder.name }}</span>
-            <span class="folder-count">{{ folder.noteCount }}</span>
-            <div class="folder-actions">
-              <el-icon @click.stop="editFolder(folder)"><Edit /></el-icon>
-              <el-icon @click.stop="handleDeleteFolder(folder.id)"><Delete /></el-icon>
+        <div class="folder-list">
+          <transition-group name="fade-slide" tag="div" class="folder-list-wrapper">
+            <div
+              v-for="folder in folderStore.folders"
+              :key="folder.id"
+              class="folder-item"
+              :class="{ active: folderStore.currentFolderId === folder.id }"
+              @click="selectFolder(folder.id)"
+            >
+              <el-icon><FolderIcon /></el-icon>
+              <span class="folder-name">{{ folder.name }}</span>
+              <span class="folder-count">{{ folder.noteCount }}</span>
+              <div class="folder-actions">
+                <el-icon @click.stop="editFolder(folder)"><Edit /></el-icon>
+                <el-icon @click.stop="handleDeleteFolder(folder.id)"><Delete /></el-icon>
+              </div>
             </div>
-          </div>
+          </transition-group>
         </div>
       </div>
     </div>
@@ -195,6 +197,10 @@ const handleLoadMore = () => {
 
 // 初始化加载
 onMounted(() => {
+  // 清空之前的数据
+  noteStore.notes = []
+  noteStore.page = 1
+
   // 加载文件夹列表
   folderStore.fetchFolders()
   // 加载收藏笔记（默认全部）
@@ -222,6 +228,20 @@ onMounted(() => {
     position: sticky;
     top: 20px;
     margin-left: 10px;
+    opacity: 0;
+    animation: sidebar-fade-in 0.5s ease-out forwards;
+    animation-delay: 0.1s;
+
+    @keyframes sidebar-fade-in {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
 
     .el-divider {
       margin: 16px 0;
@@ -339,6 +359,34 @@ onMounted(() => {
       display: flex;
       flex-direction: column;
       gap: 4px;
+
+      // 文件夹列表容器
+      .folder-list-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      // 淡入动画
+      .fade-slide-enter-active {
+        transition: all 0.4s ease-out;
+
+        &:nth-child(1) { transition-delay: 0.05s; }
+        &:nth-child(2) { transition-delay: 0.1s; }
+        &:nth-child(3) { transition-delay: 0.15s; }
+        &:nth-child(4) { transition-delay: 0.2s; }
+        &:nth-child(5) { transition-delay: 0.25s; }
+      }
+
+      .fade-slide-enter-from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      .fade-slide-enter-to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   }
 

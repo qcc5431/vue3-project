@@ -1,8 +1,8 @@
 <template>
   <div class="home-page">
     <!-- 关注动态区 - 走马灯 -->
-    <div v-if="followingNotes.length > 0" class="following-section">
-      <div class="carousel-container">
+    <div class="following-section">
+      <div v-if="followingNotes.length > 0" class="carousel-container">
         <el-carousel
           :interval="0"
           arrow="always"
@@ -95,6 +95,7 @@ const hasMore = computed(() => {
 const changeSortType = (type: NoteSortType) => {
   sortType.value = type
   noteStore.page = 1
+  noteStore.notes = [] // 先清空数据
   noteStore.fetchNotes({ sortType: type })
 }
 
@@ -110,6 +111,9 @@ const handlePreload = (): void => {
 
 // 初始化加载
 onMounted(() => {
+  // 清空之前的数据
+  noteStore.notes = []
+  noteStore.page = 1
   noteStore.fetchNotes({ sortType: sortType.value })
 })
 </script>
@@ -123,6 +127,24 @@ onMounted(() => {
   // 关注动态区
   .following-section {
     margin-bottom: 60px;
+    min-height: 400px; // 固定最小高度，防止布局跳动
+
+    .carousel-container {
+      visibility: hidden;
+      transform: translateY(-10px);
+      animation: fade-in 0.4s ease-out forwards;
+    }
+
+    @keyframes fade-in {
+      from {
+        visibility: hidden;
+        transform: translateY(-10px);
+      }
+      to {
+        visibility: visible;
+        transform: translateY(0);
+      }
+    }
 
     .carousel-container {
       background: transparent !important;
