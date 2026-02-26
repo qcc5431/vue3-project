@@ -6,7 +6,7 @@
         <el-carousel
           :interval="0"
           arrow="always"
-          height="320px"
+          height="220px"
           indicator-position="none"
           type="card"
         >
@@ -21,7 +21,12 @@
     <div class="content-section">
       <!-- 排序类型切换 -->
       <div class="sort-tabs">
-        <el-tooltip v-for="item in sortItems" :key="item.type" :content="item.label" placement="bottom">
+        <el-tooltip
+          v-for="item in sortItems"
+          :key="item.type"
+          :content="item.label"
+          placement="bottom"
+        >
           <div
             class="sort-item"
             :class="{ active: sortType === item.type }"
@@ -55,7 +60,7 @@
 
 <script setup lang="ts">
 import { useNoteStore } from '@/store/modules/note'
-import type { NoteSortType } from '@/api/types/note'
+import type { NoteSortType, Note } from '@/api/types/note'
 import CarouselNoteCard from '@/components/CarouselNoteCard.vue'
 import NoteCard from '@/components/NoteCard.vue'
 import WaterfallList from '@/components/WaterfallList.vue'
@@ -79,12 +84,8 @@ const sortItems: SortItem[] = [
   { type: 'hot', label: '最热', icon: Trophy },
 ]
 
-// 关注用户的笔记（用于走马灯）
-const followingNotes = computed(() => {
-  // 始终显示前3条笔记作为走马灯内容
-  // TODO: 未来可以根据登录状态区分：已登录显示关注用户笔记，未登录显示推荐笔记
-  return noteStore.notes.slice(0, 3)
-})
+// 关注用户的笔记（用于走马灯）- 独立存储，不随排序切换而变化
+const followingNotes = ref<Note[]>([])
 
 // 是否还有更多
 const hasMore = computed(() => {
@@ -114,7 +115,12 @@ onMounted(() => {
   // 清空之前的数据
   noteStore.notes = []
   noteStore.page = 1
-  noteStore.fetchNotes({ sortType: sortType.value })
+  noteStore.fetchNotes({ sortType: sortType.value }).then(() => {
+    // 初始化时，保存前3条笔记作为走马灯内容
+    if (followingNotes.value.length === 0) {
+      followingNotes.value = noteStore.notes.slice(0, 3)
+    }
+  })
 })
 </script>
 
@@ -126,8 +132,8 @@ onMounted(() => {
 
   // 关注动态区
   .following-section {
-    margin-bottom: 60px;
-    min-height: 400px; // 固定最小高度，防止布局跳动
+    margin-bottom: 10px;
+    min-height: 220px; // 固定最小高度，防止布局跳动
 
     .carousel-container {
       visibility: hidden;
