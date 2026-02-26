@@ -6,13 +6,21 @@ export type NoteVisibility = 'public' | 'private'
 // 笔记排序类型
 export type NoteSortType = 'latest' | 'hot' | 'recommend'
 
+// 媒体项
+export interface MediaItem {
+  type: 'image' | 'video'
+  url: string
+  width: number
+  height: number
+  duration?: number // 视频时长（秒）
+}
+
 // 笔记
 export interface Note {
   id: string
   title: string
   content: string // Markdown格式
-  coverImage?: string // 封面图
-  coverImageAspectRatio?: number // 封面图宽高比 (width/height)
+  coverMedia: MediaItem[] // 封面媒体（图片/视频）
   images: string[] // 笔记中的图片列表
   authorId: string
   authorName: string
@@ -32,7 +40,7 @@ export interface Note {
 export interface CreateNoteParams {
   title: string
   content: string
-  coverImage?: string
+  coverMedia: MediaItem[]
   images: string[]
   visibility: NoteVisibility
 }
@@ -42,7 +50,7 @@ export interface UpdateNoteParams {
   id: string
   title?: string
   content?: string
-  coverImage?: string
+  coverMedia?: MediaItem[]
   images?: string[]
   visibility?: NoteVisibility
 }
