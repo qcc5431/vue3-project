@@ -128,26 +128,20 @@ export const mockNotes: Note[] = [
   },
   {
     id: '3',
-    title: '云南大理洱海骑行记',
-    content: `# 洱海骑行
+    title: '今日微信聊天截图分享',
+    content: `# 有趣的聊天记录
 
-环洱海骑行是来大理必做的事情之一。
+今天和朋友的对话太好笑了，记录一下
 
-## 路线推荐
+## 聊天内容
 
-从古城出发，沿着洱海东路一路向北，风景绝美！
-
-## 注意事项
-
-- 租个电动车，全程120公里太累了
-- 防晒一定要做好
-- 带点干粮和水`,
+就是一些日常的碎碎念~`,
     coverMedia: [
       {
         type: 'image' as const,
-        url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=900',
-        width: 600,
-        height: 900,
+        url: '/src/assets/images/e564f3297855f3064a04abf145eb0b6.png',
+        width: 375,
+        height: 812,
       },
     ],
     images: [],

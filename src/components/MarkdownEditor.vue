@@ -2,33 +2,51 @@
   <div class="markdown-editor">
     <!-- 工具栏 -->
     <div class="editor-toolbar">
-      <el-button-group>
-        <el-button size="small" @click="insertBold">加粗</el-button>
-        <el-button size="small" @click="insertItalic">斜体</el-button>
-        <el-button size="small" @click="insertStrikethrough">删除线</el-button>
-      </el-button-group>
+      <button class="toolbar-btn" title="加粗" @click="insertBold">
+        <strong>B</strong>
+      </button>
+      <button class="toolbar-btn" title="斜体" @click="insertItalic">
+        <em>I</em>
+      </button>
+      <button class="toolbar-btn" title="删除线" @click="insertStrikethrough">
+        <s>S</s>
+      </button>
 
-      <el-button-group>
-        <el-button size="small" @click="insertHeading">标题</el-button>
-        <el-button size="small" @click="insertList">列表</el-button>
-        <el-button size="small" @click="insertOrderedList">有序列表</el-button>
-        <el-button size="small" @click="insertTaskList">任务列表</el-button>
-      </el-button-group>
+      <div class="toolbar-divider"></div>
 
-      <el-button-group>
-        <el-button size="small" @click="insertCodeBlock">代码块</el-button>
-        <el-button size="small" @click="insertTable">表格</el-button>
-        <el-button size="small" @click="insertQuote">引用</el-button>
-        <el-button size="small" @click="insertDivider">分割线</el-button>
-      </el-button-group>
+      <button class="toolbar-btn" title="标题" @click="insertHeading">
+        <span style="font-weight: 600">H</span>
+      </button>
+      <button class="toolbar-btn" title="无序列表" @click="insertList">
+        <el-icon><List /></el-icon>
+      </button>
+      <button class="toolbar-btn" title="有序列表" @click="insertOrderedList">
+        <el-icon><Ticket /></el-icon>
+      </button>
 
-      <el-button-group>
-        <el-button size="small" @click="insertLink">链接</el-button>
-        <el-button size="small" @click="triggerImageUpload">
-          <el-icon><Picture /></el-icon>
-          图片
-        </el-button>
-      </el-button-group>
+      <div class="toolbar-divider"></div>
+
+      <button class="toolbar-btn" title="代码块" @click="insertCodeBlock">
+        <el-icon><Document /></el-icon>
+      </button>
+      <button class="toolbar-btn" title="表格" @click="insertTable">
+        <el-icon><Grid /></el-icon>
+      </button>
+      <button class="toolbar-btn" title="引用" @click="insertQuote">
+        <el-icon><ChatDotRound /></el-icon>
+      </button>
+      <button class="toolbar-btn" title="分割线" @click="insertDivider">
+        <el-icon><Minus /></el-icon>
+      </button>
+
+      <div class="toolbar-divider"></div>
+
+      <button class="toolbar-btn" title="链接" @click="insertLink">
+        <el-icon><Link /></el-icon>
+      </button>
+      <button class="toolbar-btn" title="图片" @click="triggerImageUpload">
+        <el-icon><Picture /></el-icon>
+      </button>
 
       <EmojiPicker @select="insertEmoji" />
 
@@ -65,7 +83,16 @@
 </template>
 
 <script setup lang="ts">
-import { Picture } from '@element-plus/icons-vue'
+import {
+  Picture,
+  List,
+  Ticket,
+  Document,
+  Grid,
+  ChatDotRound,
+  Minus,
+  Link,
+} from '@element-plus/icons-vue'
 import EmojiPicker from './EmojiPicker.vue'
 import MarkdownPreview from './MarkdownPreview.vue'
 
@@ -124,11 +151,6 @@ const insertList = () => {
 // 插入有序列表
 const insertOrderedList = () => {
   insertText('1. 列表项1\n2. 列表项2\n3. 列表项3\n\n')
-}
-
-// 插入任务列表
-const insertTaskList = () => {
-  insertText('- [ ] 任务1\n- [ ] 任务2\n- [x] 已完成任务\n\n')
 }
 
 // 插入代码块
@@ -205,18 +227,48 @@ const handleInput = () => {
 
 <style lang="scss" scoped>
 .markdown-editor {
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  overflow: hidden;
+  border: none;
 
   .editor-toolbar {
-    padding: 8px;
-    background: #f5f7fa;
-    border-bottom: 1px solid #dcdfe6;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e6eb;
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 4px;
     align-items: center;
+
+    .toolbar-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #515767;
+      font-size: 16px;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f7f8fa;
+        color: #409eff;
+      }
+
+      strong,
+      em,
+      s {
+        font-size: 14px;
+        font-weight: 600;
+      }
+    }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 20px;
+      background: #e5e6eb;
+      margin: 0 8px;
+    }
 
     .toolbar-right {
       margin-left: auto;
@@ -225,11 +277,12 @@ const handleInput = () => {
 
   .editor-container {
     display: flex;
+    margin-top: 16px;
 
     &.split-view {
       .editor-textarea {
         width: 50%;
-        border-right: 1px solid #dcdfe6;
+        border-right: 1px solid #e5e6eb;
       }
 
       .preview-pane {
@@ -249,6 +302,19 @@ const handleInput = () => {
         border-radius: 0;
         box-shadow: none;
         resize: vertical;
+        padding: 16px 0;
+        font-size: 15px;
+        line-height: 1.8;
+        color: #1f2329;
+        background: transparent;
+
+        &::placeholder {
+          color: #c8c9cc;
+        }
+
+        &:focus {
+          outline: none;
+        }
       }
     }
   }

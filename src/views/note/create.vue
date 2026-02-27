@@ -1,116 +1,89 @@
 <template>
   <div class="create-note-page">
-    <el-card>
-      <div class="note-editor">
-        <h2 class="page-title">{{ isEdit ? '编辑笔记' : '创建笔记' }}</h2>
+    <div class="note-editor">
+      <!-- 标题输入 -->
+      <el-input
+        v-model="formData.title"
+        placeholder="请输入标题"
+        class="title-input"
+        maxlength="100"
+      />
 
-        <el-form :model="formData" label-width="80px">
-          <!-- 标题 -->
-          <el-form-item label="标题">
-            <el-input
-              v-model="formData.title"
-              placeholder="请输入笔记标题"
-              maxlength="100"
-              show-word-limit
-            />
-          </el-form-item>
-
-          <!-- Markdown编辑器 -->
-          <el-form-item label="内容">
-            <MarkdownEditor v-model="formData.content" @upload-image="handleImageUpload" />
-          </el-form-item>
-
-          <!-- 封面设置 -->
-          <el-form-item label="封面设置">
-            <div class="cover-setting">
-              <div v-if="formData.coverMedia.length > 0" class="cover-preview">
-                <div class="preview-grid">
-                  <div
-                    v-for="(media, index) in formData.coverMedia"
-                    :key="index"
-                    class="preview-item"
-                  >
-                    <img v-if="media.type === 'image'" :src="media.url" alt="封面" />
-                    <video v-else :src="media.url" />
-                    <el-button
-                      class="remove-btn"
-                      circle
-                      size="small"
-                      @click="removeCoverMedia(index)"
-                    >
-                      <el-icon><Close /></el-icon>
-                    </el-button>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="cover-tips">
-                <el-text type="info" size="small">未设置封面，将自动使用文中前3张图片</el-text>
-              </div>
-              <div class="cover-actions">
-                <el-button size="small" @click="selectFromContent">
-                  <el-icon><Picture /></el-icon>
-                  从文中选择
-                </el-button>
-                <el-button size="small" @click="uploadCover">
-                  <el-icon><Upload /></el-icon>
-                  从本地上传
-                </el-button>
-                <el-button v-if="formData.coverMedia.length > 0" size="small" @click="clearCover">
-                  清除封面
-                </el-button>
-              </div>
-            </div>
-            <input
-              ref="coverInput"
-              type="file"
-              accept="image/*,video/*"
-              multiple
-              style="display: none"
-              @change="handleCoverUpload"
-            />
-          </el-form-item>
-
-          <!-- 图片列表 -->
-          <el-form-item v-if="formData.images.length > 0" label="图片">
-            <div class="image-list">
-              <div v-for="(img, index) in formData.images" :key="index" class="image-item">
-                <el-image :src="img" fit="cover" />
-                <el-button class="remove-btn" circle @click="removeImage(index)">
-                  <el-icon><Close /></el-icon>
-                </el-button>
-              </div>
-            </div>
-          </el-form-item>
-
-          <!-- 可见性 -->
-          <el-form-item label="可见性">
-            <el-radio-group v-model="formData.visibility">
-              <el-radio label="public">公开</el-radio>
-              <el-radio label="private">仅自己可见</el-radio>
-            </el-radio-group>
-          </el-form-item>
-
-          <!-- 操作按钮 -->
-          <el-form-item>
-            <el-button type="primary" :loading="loading" @click="handleSubmit">
-              {{ isEdit ? '保存' : '发布' }}
-            </el-button>
-            <el-button @click="handleCancel">取消</el-button>
-            <el-button @click="triggerMarkdownImport">
-              <el-icon><Upload /></el-icon>
-              导入Markdown
-            </el-button>
-            <input
-              ref="markdownInput"
-              type="file"
-              accept=".md"
-              style="display: none"
-              @change="handleMarkdownImport"
-            />
-          </el-form-item>
-        </el-form>
+      <!-- Markdown编辑器 -->
+      <div class="editor-wrapper">
+        <MarkdownEditor v-model="formData.content" @upload-image="handleImageUpload" />
       </div>
-    </el-card>
+
+      <!-- 封面设置区域 -->
+      <div class="cover-section">
+        <div class="section-title">封面设置</div>
+        <div v-if="formData.coverMedia.length > 0" class="cover-preview">
+          <div class="preview-grid">
+            <div v-for="(media, index) in formData.coverMedia" :key="index" class="preview-item">
+              <img v-if="media.type === 'image'" :src="media.url" alt="封面" />
+              <video v-else :src="media.url" />
+              <div class="remove-btn" @click="removeCoverMedia(index)">
+                <el-icon><Close /></el-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="cover-tips">未设置封面，将自动使用文中前3张图片</div>
+        <div class="cover-actions">
+          <el-button text @click="selectFromContent">
+            <el-icon><Picture /></el-icon>
+            从文中选择
+          </el-button>
+          <el-button text @click="uploadCover">
+            <el-icon><Upload /></el-icon>
+            本地上传
+          </el-button>
+          <el-button v-if="formData.coverMedia.length > 0" text @click="clearCover">
+            清除封面
+          </el-button>
+        </div>
+        <input
+          ref="coverInput"
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          style="display: none"
+          @change="handleCoverUpload"
+        />
+      </div>
+
+      <!-- 可见性设置 -->
+      <div class="visibility-section">
+        <div class="section-title">可见性</div>
+        <el-radio-group v-model="formData.visibility" class="visibility-radio">
+          <el-radio label="public">公开</el-radio>
+          <el-radio label="private">仅自己可见</el-radio>
+        </el-radio-group>
+      </div>
+
+      <!-- 底部操作栏 -->
+      <div class="bottom-bar">
+        <div class="left-actions">
+          <el-button text @click="triggerMarkdownImport">
+            <el-icon><Upload /></el-icon>
+            导入Markdown
+          </el-button>
+          <input
+            ref="markdownInput"
+            type="file"
+            accept=".md"
+            style="display: none"
+            @change="handleMarkdownImport"
+          />
+        </div>
+        <div class="right-actions">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="loading" @click="handleSubmit">
+            {{ isEdit ? '保存' : '发布' }}
+          </el-button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -321,10 +294,6 @@ const handleImageUpload = (files: File[]) => {
   })
 }
 
-const removeImage = (index: number) => {
-  formData.images.splice(index, 1)
-}
-
 // 导入Markdown
 const triggerMarkdownImport = () => {
   markdownInput.value?.click()
@@ -379,81 +348,190 @@ const handleCancel = () => {
 
 <style lang="scss" scoped>
 .create-note-page {
-  max-width: 900px;
-  margin: 0 auto;
+  min-height: 100vh;
+  padding: 40px 20px;
 
   .note-editor {
-    .page-title {
-      font-size: 24px;
-      font-weight: 600;
-      margin: 0 0 24px;
-      color: #333;
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 8px;
+    padding: 60px 80px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    // 标题输入
+    .title-input {
+      margin-bottom: 32px;
+
+      :deep(.el-input__wrapper) {
+        box-shadow: none;
+        padding: 0;
+        border: none;
+        background: transparent;
+      }
+
+      :deep(.el-input__inner) {
+        font-size: 32px;
+        font-weight: 400;
+        line-height: 1.4;
+        color: #1f2329;
+        padding: 0;
+
+        &::placeholder {
+          color: #c8c9cc;
+        }
+      }
     }
-  }
 
-  .cover-setting {
-    width: 100%;
+    // 编辑器包装
+    .editor-wrapper {
+      margin-bottom: 40px;
+      min-height: 300px;
+    }
 
-    .cover-preview {
-      margin-bottom: 12px;
+    // 分区标题
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2329;
+      margin-bottom: 16px;
+    }
 
-      .preview-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 12px;
+    // 封面设置区域
+    .cover-section {
+      padding: 24px 0;
+      border-top: 1px solid #ebeef5;
+      margin-bottom: 24px;
 
-        .preview-item {
-          position: relative;
-          width: 100%;
-          height: 120px;
-          border-radius: 4px;
-          overflow: hidden;
-          border: 1px solid #ddd;
+      .cover-preview {
+        margin-bottom: 16px;
 
-          img,
-          video {
+        .preview-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+          gap: 12px;
+
+          .preview-item {
+            position: relative;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-
-          .remove-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border: none;
-            color: #fff;
+            aspect-ratio: 1;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #e5e6eb;
+            cursor: pointer;
+            transition: all 0.2s;
 
             &:hover {
-              background-color: rgba(0, 0, 0, 0.7);
+              border-color: #409eff;
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
+
+              .remove-btn {
+                opacity: 1;
+              }
             }
+
+            img,
+            video {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+
+            .remove-btn {
+              position: absolute;
+              top: 6px;
+              right: 6px;
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              background: rgba(0, 0, 0, 0.6);
+              color: #fff;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              opacity: 0;
+              transition: all 0.2s;
+              font-size: 14px;
+
+              &:hover {
+                background: rgba(0, 0, 0, 0.8);
+              }
+            }
+          }
+        }
+      }
+
+      .cover-tips {
+        padding: 12px 16px;
+        background: #f7f8fa;
+        border-radius: 6px;
+        color: #8f959e;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+
+      .cover-actions {
+        display: flex;
+        gap: 16px;
+
+        :deep(.el-button) {
+          color: #409eff;
+          font-size: 14px;
+          padding: 0;
+
+          &:hover {
+            color: #66b1ff;
           }
         }
       }
     }
 
-    .cover-tips {
-      padding: 12px;
-      background-color: #f0f9ff;
-      border-radius: 4px;
-      margin-bottom: 12px;
+    // 可见性设置
+    .visibility-section {
+      padding: 24px 0;
+      border-top: 1px solid #ebeef5;
+      margin-bottom: 24px;
+
+      .visibility-radio {
+        :deep(.el-radio) {
+          margin-right: 24px;
+        }
+      }
     }
 
-    .cover-actions {
+    // 底部操作栏
+    .bottom-bar {
       display: flex;
-      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 32px;
+      border-top: 1px solid #ebeef5;
+
+      .left-actions {
+        :deep(.el-button) {
+          color: #8f959e;
+          font-size: 14px;
+          padding: 0;
+
+          &:hover {
+            color: #409eff;
+          }
+        }
+      }
+
+      .right-actions {
+        display: flex;
+        gap: 12px;
+
+        :deep(.el-button) {
+          padding: 10px 24px;
+          border-radius: 6px;
+          font-size: 14px;
+        }
+      }
     }
-  }
-
-  .image-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .upload-tips {
-    margin-top: 8px;
   }
 }
 </style>

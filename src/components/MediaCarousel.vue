@@ -1,21 +1,28 @@
 <template>
   <div class="media-carousel">
-    <el-carousel
-      v-if="mediaList.length > 0"
-      :height="carouselHeight + 'px'"
-      indicator-position="none"
-      arrow="always"
-      @change="handleChange"
-    >
-      <el-carousel-item v-for="(media, index) in mediaList" :key="index">
-        <div class="media-wrapper">
-          <el-image v-if="media.type === 'image'" :src="media.url" fit="contain" lazy />
-          <VideoPlayer v-else :src="media.url" :autoplay="index === 0" />
-        </div>
-      </el-carousel-item>
-    </el-carousel>
-    <div v-if="mediaList.length > 1" class="media-indicator">
-      {{ currentIndex + 1 }}/{{ mediaList.length }}
+    <!-- 单个视频直接显示，不轮播 -->
+    <div v-if="firstMedia?.type === 'video'" class="single-video">
+      <VideoPlayer :src="firstMedia!.url" :autoplay="true" />
+    </div>
+
+    <!-- 图片轮播 -->
+    <div v-else @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+      <el-carousel
+        v-if="mediaList.length > 0"
+        :height="carouselHeight + 'px'"
+        indicator-position="none"
+        arrow="hover"
+        @change="handleChange"
+      >
+        <el-carousel-item v-for="(media, index) in mediaList" :key="index">
+          <div class="media-wrapper">
+            <el-image :src="media.url" fit="contain" lazy />
+          </div>
+        </el-carousel-item>
+      </el-carousel>
+      <div v-if="mediaList.length > 1 && isHovering" class="media-indicator">
+        {{ currentIndex + 1 }}/{{ mediaList.length }}
+      </div>
     </div>
   </div>
 </template>
@@ -34,6 +41,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const currentIndex = ref(0)
+const isHovering = ref(false)
+
+const firstMedia = computed(() => props.mediaList[0])
 
 const carouselHeight = computed(() => {
   if (props.height > 0) {
