@@ -1,7 +1,11 @@
 <template>
   <div class="media-carousel">
     <!-- 单个视频直接显示，不轮播 -->
-    <div v-if="firstMedia?.type === 'video'" class="single-video">
+    <div
+      v-if="firstMedia?.type === 'video'"
+      class="single-video"
+      :style="{ height: videoHeight + 'px' }"
+    >
       <VideoPlayer :src="firstMedia!.url" :autoplay="true" />
     </div>
 
@@ -45,14 +49,20 @@ const isHovering = ref(false)
 
 const firstMedia = computed(() => props.mediaList[0])
 
+// 视频高度：使用传入的高度，默认500px
+const videoHeight = computed(() => {
+  return props.height > 0 ? props.height : 500
+})
+
+// 图片轮播高度
 const carouselHeight = computed(() => {
   if (props.height > 0) {
     return props.height
   }
 
-  const firstMedia = props.mediaList[0]
-  if (firstMedia) {
-    const aspectRatio = firstMedia.height / firstMedia.width
+  const first = props.mediaList[0]
+  if (first) {
+    const aspectRatio = first.height / first.width
     return Math.round(300 * aspectRatio)
   }
 
@@ -69,6 +79,13 @@ const handleChange = (index: number) => {
   position: relative;
   width: 100%;
   overflow: hidden;
+
+  .single-video {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+  }
 
   :deep(.el-carousel) {
     border-radius: 8px;

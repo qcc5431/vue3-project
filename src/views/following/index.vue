@@ -22,11 +22,6 @@
             </div>
           </div>
         </transition-group>
-
-        <el-empty
-          v-if="!socialStore.loading && socialStore.followingList.length === 0"
-          description="暂无关注用户"
-        />
       </div>
     </div>
 
@@ -151,11 +146,21 @@ onMounted(() => {
       .fade-slide-enter-active {
         transition: all 0.4s ease-out;
 
-        &:nth-child(1) { transition-delay: 0.05s; }
-        &:nth-child(2) { transition-delay: 0.1s; }
-        &:nth-child(3) { transition-delay: 0.15s; }
-        &:nth-child(4) { transition-delay: 0.2s; }
-        &:nth-child(5) { transition-delay: 0.25s; }
+        &:nth-child(1) {
+          transition-delay: 0.05s;
+        }
+        &:nth-child(2) {
+          transition-delay: 0.1s;
+        }
+        &:nth-child(3) {
+          transition-delay: 0.15s;
+        }
+        &:nth-child(4) {
+          transition-delay: 0.2s;
+        }
+        &:nth-child(5) {
+          transition-delay: 0.25s;
+        }
       }
 
       .fade-slide-enter-from {

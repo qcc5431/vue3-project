@@ -92,7 +92,7 @@ import { Upload, Picture, Close } from '@element-plus/icons-vue'
 import { useNoteStore } from '@/store/modules/note'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import type { MediaItem } from '@/api/types/note'
-import { getImageSize, getVideoMetadata } from '@/utils/mediaHelper'
+import { uploadImage, uploadVideo } from '@/api/upload'
 
 const router = useRouter()
 const route = useRoute()
@@ -166,7 +166,7 @@ const selectFromContent = () => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
   })
-    .then(async () => {
+    .then(() => {
       const selectedElements = document.querySelectorAll('.image-selector .image-item.selected')
       const selectedUrls = Array.from(selectedElements)
         .map((el) => el.querySelector('img')?.src)
@@ -178,21 +178,13 @@ const selectFromContent = () => {
         return
       }
 
-      // 转换为MediaItem
-      const mediaItems: MediaItem[] = []
-      for (const url of selectedUrls) {
-        try {
-          // 简化处理：直接使用默认尺寸，实际应该获取真实尺寸
-          mediaItems.push({
-            type: 'image',
-            url,
-            width: 800,
-            height: 600,
-          })
-        } catch (error) {
-          console.error('处理图片失败:', error)
-        }
-      }
+      // 转换为MediaItem（图片已上传，直接使用URL）
+      const mediaItems: MediaItem[] = selectedUrls.map((url) => ({
+        type: 'image' as const,
+        url,
+        width: 800,
+        height: 600,
+      }))
 
       formData.coverMedia = mediaItems
       ElMessage.success(`已选择 ${mediaItems.length} 张图片作为封面`)
@@ -207,7 +199,7 @@ const uploadCover = () => {
   coverInput.value?.click()
 }
 
-// 处理封面上传
+// 处理封面上传（立即上传到COS）
 const handleCoverUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const files = Array.from(target.files || [])
@@ -221,77 +213,89 @@ const handleCoverUpload = async (event: Event) => {
   }
 
   const newMediaItems: MediaItem[] = []
+  const uploadPromises: Promise<void>[] = []
 
   for (const file of files) {
-    try {
-      const isImage = file.type.startsWith('image/')
-      const isVideo = file.type.startsWith('video/')
+    const isImage = file.type.startsWith('image/')
+    const isVideo = file.type.startsWith('video/')
 
-      if (!isImage && !isVideo) {
-        ElMessage.warning(`文件 ${file.name} 格式不支持`)
-        continue
-      }
-
-      const url = URL.createObjectURL(file)
-
-      if (isImage) {
-        const { width, height } = await getImageSize(file)
-        newMediaItems.push({
-          type: 'image',
-          url,
-          width,
-          height,
-        })
-      } else if (isVideo) {
-        const { width, height, duration } = await getVideoMetadata(file)
-        newMediaItems.push({
-          type: 'video',
-          url,
-          width,
-          height,
-          duration,
-        })
-      }
-    } catch (error) {
-      console.error('处理文件失败:', error)
-      ElMessage.error(`处理文件 ${file.name} 失败`)
+    if (!isImage && !isVideo) {
+      ElMessage.warning(`文件 ${file.name} 格式不支持`)
+      continue
     }
+
+    // 立即上传到COS
+    const uploadPromise = (async () => {
+      try {
+        if (isImage) {
+          const res = await uploadImage(file, 'note')
+          if (res.code === 200 && res.data) {
+            newMediaItems.push({
+              type: 'image',
+              url: res.data.url,
+              width: res.data.width,
+              height: res.data.height,
+            })
+          }
+        } else if (isVideo) {
+          const res = await uploadVideo(file)
+          if (res.code === 200 && res.data) {
+            newMediaItems.push({
+              type: 'video',
+              url: res.data.url,
+              width: res.data.width,
+              height: res.data.height,
+              duration: res.data.duration,
+            })
+          }
+        }
+      } catch (error) {
+        console.error('上传失败:', error)
+        ElMessage.error(`上传 ${file.name} 失败`)
+      }
+    })()
+
+    uploadPromises.push(uploadPromise)
   }
 
-  formData.coverMedia = [...formData.coverMedia, ...newMediaItems]
+  // 等待所有上传完成
+  await Promise.all(uploadPromises)
+
+  if (newMediaItems.length > 0) {
+    formData.coverMedia = [...formData.coverMedia, ...newMediaItems]
+    ElMessage.success(`已上传 ${newMediaItems.length} 个文件`)
+  }
+
   target.value = ''
 }
 
 // 移除封面媒体
 const removeCoverMedia = (index: number) => {
-  const item = formData.coverMedia[index]
-  if (item) {
-    URL.revokeObjectURL(item.url)
-  }
   formData.coverMedia = formData.coverMedia.filter((_, i) => i !== index)
 }
 
 // 清除封面
 const clearCover = () => {
-  formData.coverMedia.forEach((item) => {
-    URL.revokeObjectURL(item.url)
-  })
   formData.coverMedia = []
   ElMessage.success('已清除封面，将自动使用文中图片')
 }
 
-// 处理图片上传
-const handleImageUpload = (files: File[]) => {
-  files.forEach((file) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const url = e.target?.result as string
-      formData.images.push(url)
-      // 插入到Markdown中
-      formData.content += `\n![图片](${url})\n`
+// 处理图片上传（立即上传到COS）
+const handleImageUpload = async (files: File[]) => {
+  for (const file of files) {
+    try {
+      const res = await uploadImage(file, 'note')
+      if (res.code === 200 && res.data) {
+        const url = res.data.url
+        formData.images.push(url)
+        // 插入到Markdown中
+        formData.content += `\n![图片](${url})\n`
+      }
+    } catch (error) {
+      console.error('上传图片失败:', error)
+      ElMessage.error('上传图片失败')
     }
-    reader.readAsDataURL(file)
-  })
+  }
 }
 
 // 导入Markdown
@@ -326,13 +330,26 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
+    // 提取最终的图片列表
+    const images = extractImagesFromContent()
+
     if (isEdit.value) {
       await noteStore.updateNote({
         id: route.params.id as string,
-        ...formData,
+        title: formData.title,
+        content: formData.content,
+        coverMedia: formData.coverMedia,
+        images,
+        visibility: formData.visibility,
       })
     } else {
-      await noteStore.createNote(formData)
+      await noteStore.createNote({
+        title: formData.title,
+        content: formData.content,
+        coverMedia: formData.coverMedia,
+        images,
+        visibility: formData.visibility,
+      })
     }
     router.push('/my-notes')
   } finally {

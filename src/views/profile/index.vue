@@ -45,8 +45,8 @@
 <script setup lang="ts">
 import { useNoteStore } from '@/store/modules/note'
 import { useSocialStore } from '@/store/modules/social'
-import { getUserById } from '@/mock/users'
-import type { UserBrief } from '@/api/types/social'
+import { getUserDetail } from '@/api/user'
+import type { UserDetail } from '@/api/types/user'
 import UserAvatar from '@/components/UserAvatar.vue'
 import NoteCard from '@/components/NoteCard.vue'
 
@@ -58,7 +58,7 @@ const userId = computed(() => (route.params.id as string) || '1')
 const isCurrentUser = computed(() => userId.value === '1')
 
 // 用户信息
-const userInfo = ref<UserBrief>({
+const userInfo = ref<UserDetail>({
   id: '1',
   username: 'traveler01',
   nickname: '旅行者小王',
@@ -70,13 +70,22 @@ const userInfo = ref<UserBrief>({
   isFollowing: false,
 })
 
+// 加载用户信息
+const loadUserInfo = async () => {
+  try {
+    const res = await getUserDetail(userId.value)
+    if (res.code === 200 && res.data) {
+      userInfo.value = res.data
+    }
+  } catch (error) {
+    console.error('加载用户信息失败', error)
+  }
+}
+
 // 初始化
 onMounted(() => {
   // 加载用户信息
-  const user = getUserById(userId.value)
-  if (user) {
-    userInfo.value = user
-  }
+  loadUserInfo()
 
   // 加载用户的笔记
   noteStore.fetchNotes({ authorId: userId.value })

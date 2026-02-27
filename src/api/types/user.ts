@@ -25,3 +25,23 @@ export interface RegisterResponse {
   message: string
   data: UserInfo
 }
+
+// 用户详情（包含社交信息）
+export interface UserDetail {
+  id: string
+  username: string
+  nickname: string
+  avatar: string
+  bio?: string
+  followingCount: number
+  followersCount: number
+  likeCount: number
+  isFollowing?: boolean
+}
+
+// 用户详情响应
+export interface UserDetailResponse {
+  code: number
+  message: string
+  data: UserDetail
+}

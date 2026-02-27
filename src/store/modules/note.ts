@@ -1,6 +1,6 @@
 // 笔记相关状态管理
 import { defineStore } from 'pinia'
-import type { Note, NoteSortType } from '@/api/types/note'
+import type { Note, NoteSortType, MediaItem } from '@/api/types/note'
 import * as noteApi from '@/api/note'
 
 interface NoteState {
@@ -154,7 +154,7 @@ export const useNoteStore = defineStore('note', {
     async createNote(params: {
       title: string
       content: string
-      coverImage?: string
+      coverMedia: MediaItem[]
       images: string[]
       visibility: 'public' | 'private'
     }) {
@@ -180,7 +180,7 @@ export const useNoteStore = defineStore('note', {
       id: string
       title?: string
       content?: string
-      coverImage?: string
+      coverMedia?: MediaItem[]
       images?: string[]
       visibility?: 'public' | 'private'
     }) {
