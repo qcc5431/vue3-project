@@ -3,6 +3,11 @@
     <div v-if="note" class="detail-container">
       <!-- 笔记内容 -->
       <el-card class="note-card">
+        <!-- 封面媒体 -->
+        <div v-if="displayCoverMedia.length > 0" class="note-media">
+          <MediaCarousel :media-list="displayCoverMedia" :height="500" />
+        </div>
+
         <h1 class="note-title">{{ note.title }}</h1>
 
         <!-- 作者信息 -->
@@ -81,6 +86,8 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import MarkdownPreview from '@/components/MarkdownPreview.vue'
 import CommentList from '@/components/CommentList.vue'
 import CommentInput from '@/components/CommentInput.vue'
+import MediaCarousel from '@/components/MediaCarousel.vue'
+import { getDisplayCoverMedia } from '@/utils/mediaHelper'
 
 const route = useRoute()
 const noteStore = useNoteStore()
@@ -92,6 +99,12 @@ const isLogin = computed(() => userStore.isLogin)
 const isFollowing = ref(false)
 const replyToUser = ref('')
 const replyToId = ref('')
+
+// 获取展示用的封面（自动或手动）
+const displayCoverMedia = computed(() => {
+  if (!note.value) return []
+  return getDisplayCoverMedia(note.value.coverMedia, note.value.content, 3)
+})
 
 // 初始化
 onMounted(async () => {
@@ -188,6 +201,10 @@ const handleCommentLike = (commentId: string) => {
   }
 
   .note-card {
+    .note-media {
+      margin-bottom: 24px;
+    }
+
     .note-title {
       font-size: 32px;
       font-weight: 600;

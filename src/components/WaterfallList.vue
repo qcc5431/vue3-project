@@ -103,32 +103,41 @@ const calculateLayout = () => {
   const newPositions: Position[] = []
 
   props.items.forEach((item) => {
-    // 4.1 计算宽高比（后端返回的是 coverImageAspectRatio）
-    // coverImageAspectRatio = width / height
-    // 如果没有，默认使用 3:4 的比例
-    const aspectRatio = (item.coverImageAspectRatio as number) || 0.75
-    const height = newColWidth / aspectRatio
+    // 4.1 从 coverMedia 中获取第一张封面的宽高比
+    // coverMedia[0] 有 width 和 height 字段
+    const coverMedia = (item.coverMedia as Array<{ width: number; height: number }>) || []
+    const firstCover = coverMedia[0]
+    const aspectRatio =
+      firstCover && firstCover.width && firstCover.height
+        ? firstCover.width / firstCover.height
+        : 0.75
 
-    // 4.2 找到最短列
+    // 4.2 根据宽高比判断使用竖版还是横版卡片
+    // 宽高比 < 1 表示高度大于宽度，使用竖版
+    // 宽高比 >= 1 表示宽度大于等于高度，使用横版
+    const isVertical = aspectRatio < 1
+    const imageHeight = isVertical ? Math.round(newColWidth * 1.33) : Math.round(newColWidth * 0.56) // 竖版 4:3, 横版 16:9
+
+    // 4.3 找到最短列
     const minColIndex = columnHeights.indexOf(Math.min(...columnHeights))
 
-    // 4.3 计算位置
+    // 4.4 计算位置
     const left = minColIndex * (newColWidth + props.gap)
     const top = columnHeights[minColIndex] ?? 0
 
-    // 4.4 更新列高
+    // 4.5 更新列高
     const contentHeight = 120 // padding(32) + title(45) + author(24) + stats(20)
     if (columnHeights[minColIndex] !== undefined) {
-      columnHeights[minColIndex] += height + contentHeight + props.gap
+      columnHeights[minColIndex] += imageHeight + contentHeight + props.gap
     }
 
-    // 4.5 保存位置信息（包含图片高度供 slot 使用）
+    // 4.6 保存位置信息（包含图片高度供 slot 使用）
     newPositions.push({
       top,
       left,
       width: newColWidth,
-      height: height + contentHeight,
-      imageHeight: Math.round(height),
+      height: imageHeight + contentHeight,
+      imageHeight: imageHeight,
     })
   })
 

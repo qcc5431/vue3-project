@@ -1,17 +1,23 @@
 <template>
   <el-card :body-style="{ padding: '0px' }" class="note-card" @click="handleClick">
-    <!-- 封面图 -->
+    <!-- 封面媒体 - 只显示第一张 -->
     <div
-      v-if="note.coverImage"
+      v-if="firstCoverMedia"
       class="note-cover"
       :style="imageHeight ? { height: imageHeight + 'px' } : {}"
     >
-      <el-skeleton v-if="!imageLoaded" animated class="image-skeleton">
-        <template #template>
-          <el-skeleton-item variant="image" class="skeleton-image" />
-        </template>
-      </el-skeleton>
-      <el-image v-show="imageLoaded" :src="note.coverImage" fit="cover" @load="handleImageLoad" />
+      <el-image
+        v-if="firstCoverMedia.type === 'image'"
+        :src="firstCoverMedia.url"
+        fit="cover"
+        class="cover-image"
+      />
+      <div v-else class="video-wrapper">
+        <video :src="firstCoverMedia.url" class="cover-video" preload="metadata" />
+        <div class="play-button">
+          <el-icon :size="24"><VideoPlay /></el-icon>
+        </div>
+      </div>
     </div>
 
     <div class="note-content">
@@ -44,9 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import { View, Star, Collection } from '@element-plus/icons-vue'
+import { View, Star, Collection, VideoPlay } from '@element-plus/icons-vue'
 import type { Note } from '@/api/types/note'
 import UserAvatar from './UserAvatar.vue'
+import { getDisplayCoverMedia } from '@/utils/mediaHelper'
 
 interface Props {
   note: Note
@@ -58,13 +65,15 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const router = useRouter()
 
-// 图片加载状态
-const imageLoaded = ref(false)
+// 获取展示用的封面（自动或手动）
+const displayCoverMedia = computed(() => {
+  return getDisplayCoverMedia(props.note.coverMedia, props.note.content, 3)
+})
 
-// 图片加载完成
-const handleImageLoad = () => {
-  imageLoaded.value = true
-}
+// 只获取第一张封面
+const firstCoverMedia = computed(() => {
+  return displayCoverMedia.value[0]
+})
 
 // 格式化数字
 const formatNumber = (num: number): string => {
@@ -104,29 +113,44 @@ const handleClick = () => {
     position: relative;
     background: #f5f7f6;
 
-    .image-skeleton {
-      width: 100%;
-      height: 100%;
-    }
-
-    .skeleton-image {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    :deep(.el-image) {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    :deep(.el-image__inner) {
+    .cover-image,
+    .cover-video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
+    }
+
+    .video-wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+
+      .cover-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .play-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #d7d7d7;
+        pointer-events: none;
+        transition: all 0.3s ease;
+      }
+    }
+
+    &:hover .play-button {
+      transform: scale(1.15);
     }
   }
 
@@ -142,9 +166,7 @@ const handleClick = () => {
     line-height: 1.4;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    white-space: nowrap;
   }
 
   .note-author {

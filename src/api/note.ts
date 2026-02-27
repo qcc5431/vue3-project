@@ -52,7 +52,13 @@ export const getNoteList = async (params: GetNoteListParams = {}): Promise<NoteL
   // 分页
   const start = (page - 1) * pageSize
   const end = start + pageSize
-  const list = filteredNotes.slice(start, end)
+  const paginatedNotes = filteredNotes.slice(start, end)
+
+  // 列表接口优化：只返回第一张封面，减少数据传输
+  const list = paginatedNotes.map((note) => ({
+    ...note,
+    coverMedia: note.coverMedia.slice(0, 1), // 只取第一张封面
+  }))
 
   return {
     code: 200,

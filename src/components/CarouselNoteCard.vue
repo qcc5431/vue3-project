@@ -1,14 +1,19 @@
 <template>
   <div class="carousel-note-card" @click="handleClick">
-    <!-- 左侧封面 -->
+    <!-- 左侧封面 - 只显示第一张 -->
     <div class="card-cover">
-      <el-image :src="note.coverImage" fit="cover" lazy>
-        <template #error>
-          <div class="image-error">
-            <el-icon><Picture /></el-icon>
-          </div>
-        </template>
-      </el-image>
+      <el-image
+        v-if="firstCoverMedia && firstCoverMedia.type === 'image'"
+        :src="firstCoverMedia.url"
+        fit="cover"
+        class="cover-image"
+      />
+      <div v-else-if="firstCoverMedia && firstCoverMedia.type === 'video'" class="video-wrapper">
+        <video :src="firstCoverMedia.url" class="cover-video" preload="metadata" />
+        <div class="play-button">
+          <el-icon :size="24"><VideoPlay /></el-icon>
+        </div>
+      </div>
     </div>
 
     <!-- 右侧内容 -->
@@ -45,9 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import { View, Star, Collection, Picture } from '@element-plus/icons-vue'
+import { View, Star, Collection, VideoPlay } from '@element-plus/icons-vue'
 import type { Note } from '@/api/types/note'
 import UserAvatar from './UserAvatar.vue'
+import { getDisplayCoverMedia } from '@/utils/mediaHelper'
 
 interface Props {
   note: Note
@@ -55,6 +61,16 @@ interface Props {
 
 const props = defineProps<Props>()
 const router = useRouter()
+
+// 获取展示用的封面（自动或手动）
+const displayCoverMedia = computed(() => {
+  return getDisplayCoverMedia(props.note.coverMedia, props.note.content, 3)
+})
+
+// 只获取第一张封面
+const firstCoverMedia = computed(() => {
+  return displayCoverMedia.value[0]
+})
 
 // 格式化数字
 const formatNumber = (num: number): string => {
@@ -95,22 +111,47 @@ const handleClick = () => {
     height: 100%;
     flex-shrink: 0;
     overflow: hidden;
+    position: relative;
 
-    :deep(.el-image) {
+    .cover-image,
+    .cover-video {
       width: 100%;
       height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
-    .image-error {
+    .video-wrapper {
       width: 100%;
       height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 48px;
+      position: relative;
+
+      .cover-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .play-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #d7d7d7;
+        pointer-events: none;
+        transition: all 0.3s ease;
+      }
     }
+  }
+
+  &:hover .play-button {
+    transform: scale(1.15);
   }
 
   .card-content {
