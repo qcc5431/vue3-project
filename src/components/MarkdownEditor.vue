@@ -223,6 +223,43 @@ const handleImageUpload = (event: Event) => {
 const handleInput = () => {
   // 实时预览更新
 }
+
+// 处理粘贴事件（支持截图粘贴）
+const handlePaste = (event: ClipboardEvent) => {
+  const items = event.clipboardData?.items
+  if (!items) return
+
+  const imageFiles: File[] = []
+
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile()
+      if (file) {
+        imageFiles.push(file)
+      }
+    }
+  }
+
+  if (imageFiles.length > 0) {
+    event.preventDefault()
+    emit('upload-image', imageFiles)
+  }
+}
+
+// 监听textarea的paste事件
+onMounted(() => {
+  const textarea = textareaRef.value?.$el?.querySelector('textarea')
+  if (textarea) {
+    textarea.addEventListener('paste', handlePaste)
+  }
+})
+
+onUnmounted(() => {
+  const textarea = textareaRef.value?.$el?.querySelector('textarea')
+  if (textarea) {
+    textarea.removeEventListener('paste', handlePaste)
+  }
+})
 </script>
 
 <style lang="scss" scoped>

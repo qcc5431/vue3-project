@@ -37,11 +37,11 @@
           {{ formatNumber(note.viewCount) }}
         </span>
         <span class="stat-item">
-          <el-icon><Star /></el-icon>
+          <span class="emoji-icon">❤️</span>
           {{ formatNumber(note.likeCount) }}
         </span>
         <span class="stat-item">
-          <el-icon><Collection /></el-icon>
+          <el-icon><Star /></el-icon>
           {{ formatNumber(note.collectCount) }}
         </span>
       </div>
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { View, Star, Collection, VideoPlay } from '@element-plus/icons-vue'
+import { View, Star, VideoPlay } from '@element-plus/icons-vue'
 import type { Note } from '@/api/types/note'
 import UserAvatar from './UserAvatar.vue'
 import { getDisplayCoverMedia } from '@/utils/mediaHelper'
@@ -185,15 +185,16 @@ const handleClick = () => {
     display: flex;
     gap: 16px;
     color: #8fa998;
-    font-size: 13px;
+    font-size: 16px;
 
     .stat-item {
       display: flex;
       align-items: center;
       gap: 4px;
 
-      .el-icon {
+      .emoji-icon {
         font-size: 14px;
+        line-height: 1;
       }
     }
   }

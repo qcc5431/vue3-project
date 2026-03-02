@@ -10,7 +10,7 @@
       >
         <el-icon><Document /></el-icon>
         <span class="folder-name">全部笔记</span>
-        <span class="folder-count">{{ folderStore.totalNoteCount }}</span>
+        <span class="folder-count">{{ noteStore.total }}</span>
       </div>
 
       <el-divider />
@@ -70,11 +70,7 @@
     <el-dialog v-model="showCreateFolderDialog" title="创建文件夹" width="400px">
       <el-form @submit.prevent="handleCreateFolder">
         <el-form-item label="文件夹名称">
-          <el-input
-            v-model="newFolderName"
-            maxlength="20"
-            show-word-limit
-          />
+          <el-input v-model="newFolderName" maxlength="20" show-word-limit />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -371,11 +367,21 @@ onMounted(() => {
       .fade-slide-enter-active {
         transition: all 0.4s ease-out;
 
-        &:nth-child(1) { transition-delay: 0.05s; }
-        &:nth-child(2) { transition-delay: 0.1s; }
-        &:nth-child(3) { transition-delay: 0.15s; }
-        &:nth-child(4) { transition-delay: 0.2s; }
-        &:nth-child(5) { transition-delay: 0.25s; }
+        &:nth-child(1) {
+          transition-delay: 0.05s;
+        }
+        &:nth-child(2) {
+          transition-delay: 0.1s;
+        }
+        &:nth-child(3) {
+          transition-delay: 0.15s;
+        }
+        &:nth-child(4) {
+          transition-delay: 0.2s;
+        }
+        &:nth-child(5) {
+          transition-delay: 0.25s;
+        }
       }
 
       .fade-slide-enter-from {

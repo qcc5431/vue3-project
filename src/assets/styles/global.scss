@@ -10,6 +10,17 @@
   box-sizing: border-box;
 }
 
+// 覆盖 Element Plus 主题色，统一绿色主题
+:root {
+  --el-color-primary: #{$primary-color};
+  --el-color-primary-light-3: #{$primary-light};
+  --el-color-primary-light-5: #a8d5b1;
+  --el-color-primary-light-7: #c8e8cf;
+  --el-color-primary-light-8: #d8efdc;
+  --el-color-primary-light-9: #eef7f0;
+  --el-color-primary-dark-2: #5a9e66;
+}
+
 html,
 body {
   width: 100%;
@@ -85,6 +96,33 @@ body::-webkit-scrollbar {
 
 :not(body)::-webkit-scrollbar-track {
   background: transparent;
+}
+
+// 全局 Primary 按钮样式（统一绿色主题）
+.el-button--primary {
+  background: $primary-color !important;
+  border-color: $primary-color !important;
+  color: #fff !important;
+
+  &:hover,
+  &:focus {
+    background: $primary-light !important;
+    border-color: $primary-light !important;
+  }
+
+  &:active {
+    background: darken(#6dba7a, 8%) !important;
+    border-color: darken(#6dba7a, 8%) !important;
+  }
+
+  &.is-disabled {
+    background: rgba(109, 186, 122, 0.5) !important;
+    border-color: rgba(109, 186, 122, 0.5) !important;
+  }
+}
+
+.el-button + .el-button {
+  margin-left: 0 !important;
 }
 
 /* 全局样式：用于穿透组件边界，解决 el-dialog 渲染在 body 导致的问题 */

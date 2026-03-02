@@ -1,7 +1,7 @@
 <template>
   <div class="home-page">
     <!-- 关注动态区 - 走马灯 -->
-    <div class="following-section">
+    <div class="following-section" :class="{ 'has-data': followingNotes.length > 0 }">
       <div v-if="followingNotes.length > 0" class="carousel-container">
         <el-carousel
           :interval="0"
@@ -61,6 +61,7 @@
 <script setup lang="ts">
 import { useNoteStore } from '@/store/modules/note'
 import type { NoteSortType, Note } from '@/api/types/note'
+import { getNoteList } from '@/api/note'
 import CarouselNoteCard from '@/components/CarouselNoteCard.vue'
 import NoteCard from '@/components/NoteCard.vue'
 import WaterfallList from '@/components/WaterfallList.vue'
@@ -86,6 +87,7 @@ const sortItems: SortItem[] = [
 
 // 关注用户的笔记（用于走马灯）- 独立存储，不随排序切换而变化
 const followingNotes = ref<Note[]>([])
+const followingLoading = ref(false)
 
 // 是否还有更多
 const hasMore = computed(() => {
@@ -111,16 +113,22 @@ const handlePreload = (): void => {
 }
 
 // 初始化加载
-onMounted(() => {
+onMounted(async () => {
   // 清空之前的数据
   noteStore.notes = []
   noteStore.page = 1
-  noteStore.fetchNotes({ sortType: sortType.value }).then(() => {
-    // 初始化时，保存前3条笔记作为走马灯内容
-    if (followingNotes.value.length === 0) {
-      followingNotes.value = noteStore.notes.slice(0, 3)
-    }
-  })
+
+  // 并发加载：主列表 + 关注笔记（按最新时间排序，最多取10条）
+  followingLoading.value = true
+  const [_, followingRes] = await Promise.allSettled([
+    noteStore.fetchNotes({ sortType: sortType.value }),
+    getNoteList({ isFollowing: true, page: 1, pageSize: 10 }),
+  ])
+  followingLoading.value = false
+
+  if (followingRes.status === 'fulfilled' && followingRes.value.code === 200) {
+    followingNotes.value = followingRes.value.data.list
+  }
 })
 </script>
 
@@ -133,7 +141,10 @@ onMounted(() => {
   // 关注动态区
   .following-section {
     margin-bottom: 10px;
-    min-height: 220px; // 固定最小高度，防止布局跳动
+
+    &.has-data {
+      min-height: 220px; // 有数据时固定最小高度，防止布局跳动
+    }
 
     .carousel-container {
       visibility: hidden;

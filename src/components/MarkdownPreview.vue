@@ -33,11 +33,11 @@ const renderMarkdown = (markdown: string): string => {
   // 斜体
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>')
 
+  // 图片（必须在链接之前处理）
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />')
+
   // 链接
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-
-  // 图片
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />')
 
   // 列表
   html = html.replace(/^\- (.*$)/gim, '<li>$1</li>')
@@ -63,9 +63,9 @@ watch(
 
 <style lang="scss" scoped>
 .markdown-preview {
-  padding: 16px;
+  padding: 3px 0;
   background: #fff;
-  border: 1px solid #dcdfe6;
+  // border: 1px solid #dcdfe6;
   border-radius: 4px;
   min-height: 200px;
 
