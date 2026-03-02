@@ -26,6 +26,8 @@ export interface Comment {
   replyTo?: string // 回复的评论ID
   replyToUser?: string // 回复的用户名
   createdAt: string
+  replies?: Comment[] // 子回复列表
+  replyCount?: number // 回复总数
 }
 
 // 关注用户参数

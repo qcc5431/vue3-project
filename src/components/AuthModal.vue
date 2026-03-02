@@ -42,7 +42,59 @@
           <template v-if="userStore.authModalType === 'login'">
             <h2 class="form-title">欢迎回来</h2>
             <p class="form-subtitle">登录账号，继续你的旅程</p>
+
+            <!-- 手机验证码登录 -->
             <el-form
+              v-if="loginMode === 'phone'"
+              ref="phoneLoginFormRef"
+              :model="phoneLoginForm"
+              :rules="phoneLoginRules"
+              class="auth-form"
+              size="large"
+              autocomplete="off"
+            >
+              <el-form-item prop="phone">
+                <el-input
+                  v-model="phoneLoginForm.phone"
+                  placeholder="请输入手机号"
+                  :prefix-icon="Iphone"
+                  clearable
+                  maxlength="11"
+                />
+              </el-form-item>
+
+              <el-form-item prop="code">
+                <el-input
+                  v-model="phoneLoginForm.code"
+                  placeholder="请输入验证码"
+                  :prefix-icon="Message"
+                  maxlength="6"
+                  class="code-input"
+                  @keyup.enter="handlePhoneLogin"
+                >
+                  <template #suffix>
+                    <span class="code-divider"></span>
+                    <span
+                      class="code-btn-text"
+                      :class="{ disabled: codeCooldown > 0 }"
+                      @click.stop="sendCode"
+                    >
+                      {{ codeCooldown > 0 ? `${codeCooldown}s` : '获取验证码' }}
+                    </span>
+                  </template>
+                </el-input>
+              </el-form-item>
+
+              <el-form-item>
+                <el-button type="primary" class="auth-btn" :loading="loading" @click="handlePhoneLogin">
+                  {{ loading ? '登录中...' : '登 录' }}
+                </el-button>
+              </el-form-item>
+            </el-form>
+
+            <!-- 账号密码登录 -->
+            <el-form
+              v-else
               ref="loginFormRef"
               :model="loginForm"
               :rules="loginRules"
@@ -82,6 +134,13 @@
                 </el-button>
               </el-form-item>
             </el-form>
+
+            <!-- 切换登录方式 -->
+            <div class="login-mode-switch">
+              <el-link type="primary" :underline="false" @click="toggleLoginMode">
+                {{ loginMode === 'phone' ? '使用账号密码登录' : '使用手机验证码登录' }}
+              </el-link>
+            </div>
 
             <div class="auth-footer">
               <span>还没有账户？</span>
@@ -179,7 +238,7 @@
 </template>
 
 <script setup lang="ts">
-import { User, Lock, Message, Location, Close } from '@element-plus/icons-vue'
+import { User, Lock, Message, Location, Close, Iphone } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 import { reqRegister } from '@/api/user'
@@ -188,6 +247,92 @@ const userStore = useUserStore()
 
 // 加载状态
 const loading = ref(false)
+
+// 登录方式：'phone' | 'account'
+const loginMode = ref<'phone' | 'account'>('phone')
+
+// 切换登录方式
+const toggleLoginMode = () => {
+  loginMode.value = loginMode.value === 'phone' ? 'account' : 'phone'
+}
+
+// --- 手机验证码登录逻辑 ---
+const phoneLoginFormRef = ref<FormInstance>()
+const phoneLoginForm = reactive({
+  phone: '',
+  code: '',
+})
+const codeCooldown = ref(0)
+let cooldownTimer: ReturnType<typeof setInterval> | null = null
+
+const validatePhone = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (!value) return callback(new Error('请输入手机号'))
+  if (!/^1[3-9]\d{9}$/.test(value)) return callback(new Error('请输入正确的手机号'))
+  callback()
+}
+
+const validateCode = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (!value) return callback(new Error('请输入验证码'))
+  if (!/^\d{6}$/.test(value)) return callback(new Error('验证码为6位数字'))
+  callback()
+}
+
+const phoneLoginRules: FormRules = {
+  phone: [{ required: true, validator: validatePhone, trigger: 'blur' }],
+  code: [{ required: true, validator: validateCode, trigger: 'blur' }],
+}
+
+// 发送验证码
+const sendCode = async () => {
+  if (codeCooldown.value > 0) return
+  if (!phoneLoginForm.phone || !/^1[3-9]\d{9}$/.test(phoneLoginForm.phone)) {
+    ElMessage.warning('请先输入正确的手机号')
+    return
+  }
+
+  // TODO: 调用发送验证码 API
+  ElMessage.success('验证码已发送')
+
+  // 开始倒计时
+  codeCooldown.value = 60
+  cooldownTimer = setInterval(() => {
+    codeCooldown.value--
+    if (codeCooldown.value <= 0 && cooldownTimer) {
+      clearInterval(cooldownTimer)
+      cooldownTimer = null
+    }
+  }, 1000)
+}
+
+// 手机验证码登录
+const handlePhoneLogin = async () => {
+  if (!phoneLoginFormRef.value) return
+  await phoneLoginFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      try {
+        // TODO: 调用手机验证码登录 API
+        await userStore.login({
+          account: phoneLoginForm.phone,
+          password: phoneLoginForm.code, // 模拟，实际应调用专门的手机登录接口
+        })
+        ElMessage.success('登录成功')
+        userStore.closeAuthModal()
+      } catch (error) {
+        console.error('登录错误:', error)
+      } finally {
+        loading.value = false
+      }
+    }
+  })
+}
+
+// 清理定时器
+onUnmounted(() => {
+  if (cooldownTimer) {
+    clearInterval(cooldownTimer)
+  }
+})
 
 // --- 登录逻辑 ---
 const loginFormRef = ref<FormInstance>()
@@ -452,6 +597,48 @@ const handleRegister = async () => {
   .el-link {
     margin-left: $spacing-xs;
     font-size: $font-base;
+  }
+}
+
+.login-mode-switch {
+  text-align: center;
+  margin-top: $spacing-md;
+
+  .el-link {
+    font-size: $font-sm;
+  }
+}
+
+// 验证码输入框样式
+.code-input {
+  :deep(.el-input__suffix) {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.code-divider {
+  width: 1px;
+  height: 20px;
+  background: #dcdfe6;
+  margin-right: 12px;
+}
+
+.code-btn-text {
+  font-size: 13px;
+  color: $primary-color;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.disabled {
+    color: $text-muted;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 

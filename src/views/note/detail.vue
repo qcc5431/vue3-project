@@ -234,9 +234,10 @@ const submitComment = async () => {
 }
 
 // 回复评论
-const handleCommentReply = (comment: Comment) => {
+const handleCommentReply = (comment: Comment, parentComment?: Comment) => {
   replyToUser.value = comment.username
-  replyToId.value = comment.id
+  // 如果是回复子评论，实际回复到父评论下
+  replyToId.value = parentComment ? parentComment.id : comment.id
   isCommentInputActive.value = true
 }
 
@@ -257,6 +258,7 @@ const handleCommentLike = (commentId: string) => {
 .note-detail-page {
   height: calc(100vh - 60px); // 减去header高度
   overflow: hidden;
+  padding: 0 20px;
 
   .detail-container {
     display: grid;
@@ -264,6 +266,8 @@ const handleCommentLike = (commentId: string) => {
     gap: 0;
     height: 100%;
     padding-bottom: 10px;
+    max-width: 1400px;
+    margin: 0 auto;
   }
 
   // 左栏：封面
