@@ -118,10 +118,8 @@ const router = createRouter({
 
 // 全局前置守卫：路由跳转前的鉴权判断
 router.beforeEach((to, _from, next) => {
-  // 设置页面标题
-  if (to.meta.title) {
-    document.title = to.meta.title as string
-  }
+  // 设置页面标题（统一显示"旅行笔记"）
+  document.title = '旅行笔记'
 
   const userStore = useUserStore()
   const isLogin = userStore.isLogin

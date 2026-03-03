@@ -102,6 +102,7 @@
 <script setup lang="ts">
 import { useNoteStore } from '@/store/modules/note'
 import { useFolderStore } from '@/store/modules/folder'
+import { useUserStore } from '@/store/modules/user'
 import type { Folder } from '@/api/types/folder'
 import NoteCard from '@/components/NoteCard.vue'
 import WaterfallList from '@/components/WaterfallList.vue'
@@ -110,6 +111,7 @@ import { ElMessageBox } from 'element-plus'
 
 const noteStore = useNoteStore()
 const folderStore = useFolderStore()
+const userStore = useUserStore()
 
 // 对话框状态
 const showCreateFolderDialog = ref(false)
@@ -128,7 +130,7 @@ const selectFolder = (folderId: string | null) => {
   folderStore.setCurrentFolder(folderId)
   noteStore.page = 1
   noteStore.fetchNotes({
-    authorId: '1', // 当前用户ID
+    authorId: String(userStore.userInfo?.id), // 当前用户ID
     folderId: folderId || undefined,
   })
 }
@@ -200,7 +202,7 @@ onMounted(() => {
   // 加载文件夹列表
   folderStore.fetchFolders()
   // 加载当前用户的笔记（默认全部）
-  noteStore.fetchNotes({ authorId: '1' })
+  noteStore.fetchNotes({ authorId: String(userStore.userInfo?.id) })
 })
 </script>
 

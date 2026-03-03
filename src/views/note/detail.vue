@@ -18,7 +18,12 @@
             <div class="author-name">{{ note.authorName }}</div>
             <div class="publish-time">{{ formatTime(note.createdAt) }}</div>
           </div>
-          <el-button v-if="note.authorId !== '1'" type="primary" size="small" @click="handleFollow">
+          <el-button
+            v-if="isLogin && note.authorId !== String(userStore.userInfo?.id)"
+            type="primary"
+            size="small"
+            @click="handleFollow"
+          >
             {{ isFollowing ? '已关注' : '关注' }}
           </el-button>
         </div>

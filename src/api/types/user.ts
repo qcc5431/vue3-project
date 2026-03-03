@@ -10,9 +10,20 @@ export interface UserInfo {
   avatar?: string
 }
 
+// 用户信息响应
+export interface UserInfoResponse {
+  code: number
+  message: string
+  data: UserInfo
+}
+
 export interface LoginResponse {
-  token: string
-  user: UserInfo
+  code: number
+  message: string
+  data: {
+    token: string
+    user: UserInfo
+  }
 }
 
 export interface RegisterParams {
@@ -22,6 +33,7 @@ export interface RegisterParams {
 }
 
 export interface RegisterResponse {
+  code: number
   message: string
   data: UserInfo
 }
@@ -44,4 +56,34 @@ export interface UserDetailResponse {
   code: number
   message: string
   data: UserDetail
+}
+
+// 发送验证码参数
+export interface SendCodeParams {
+  phone: string
+}
+
+// 发送验证码响应
+export interface SendCodeResponse {
+  code: number
+  message: string
+  data?: {
+    code: string // 后端返回的验证码（测试阶段使用）
+  }
+}
+
+// 手机验证码登录参数
+export interface PhoneLoginParams {
+  phone: string
+  code: string
+}
+
+// 手机验证码登录响应
+export interface PhoneLoginResponse {
+  code: number
+  message: string
+  data: {
+    token: string
+    user: UserInfo
+  }
 }

@@ -122,7 +122,7 @@ body::-webkit-scrollbar {
 }
 
 .el-button + .el-button {
-  margin-left: 0 !important;
+  margin-left: 3px !important;
 }
 
 /* 全局样式：用于穿透组件边界，解决 el-dialog 渲染在 body 导致的问题 */

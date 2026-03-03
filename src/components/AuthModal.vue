@@ -86,7 +86,12 @@
               </el-form-item>
 
               <el-form-item>
-                <el-button type="primary" class="auth-btn" :loading="loading" @click="handlePhoneLogin">
+                <el-button
+                  type="primary"
+                  class="auth-btn"
+                  :loading="loading"
+                  @click="handlePhoneLogin"
+                >
                   {{ loading ? '登录中...' : '登 录' }}
                 </el-button>
               </el-form-item>
@@ -142,7 +147,8 @@
               </el-link>
             </div>
 
-            <div class="auth-footer">
+            <!-- 注册入口暂时隐藏 -->
+            <!-- <div class="auth-footer">
               <span>还没有账户？</span>
               <el-link
                 type="primary"
@@ -150,11 +156,11 @@
                 @click="userStore.switchAuthMode('register')"
                 >立即注册</el-link
               >
-            </div>
+            </div> -->
           </template>
 
-          <!-- 注册表单 -->
-          <template v-else>
+          <!-- 注册表单暂时隐藏 -->
+          <!-- <template v-else>
             <h2 class="form-title">创建账号</h2>
             <p class="form-subtitle">填写信息，开始记录你的旅程</p>
             <el-form
@@ -226,7 +232,7 @@
                 >立即登录</el-link
               >
             </div>
-          </template>
+          </template> -->
         </div>
         <!-- 关闭按钮 -->
         <div class="close-btn" @click="userStore.closeAuthModal()">
@@ -241,7 +247,8 @@
 import { User, Lock, Message, Location, Close, Iphone } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
-import { reqRegister } from '@/api/user'
+import { sendCode as sendCodeApi, phoneLogin } from '@/api/user'
+// import { reqRegister } from '@/api/user' // 注册功能暂时隐藏
 
 const userStore = useUserStore()
 
@@ -250,6 +257,9 @@ const loading = ref(false)
 
 // 登录方式：'phone' | 'account'
 const loginMode = ref<'phone' | 'account'>('phone')
+
+// 后端返回的验证码（测试阶段使用）
+const backendCode = ref('')
 
 // 切换登录方式
 const toggleLoginMode = () => {
@@ -290,18 +300,32 @@ const sendCode = async () => {
     return
   }
 
-  // TODO: 调用发送验证码 API
-  ElMessage.success('验证码已发送')
+  try {
+    // 调用发送验证码 API
+    const res = await sendCodeApi({ phone: phoneLoginForm.phone })
+    if (res.code === 200) {
+      // 保存后端返回的验证码（测试阶段使用）
+      const code = res.data?.code
+      if (code) {
+        backendCode.value = code
+        ElMessage.success(`验证码：${code}`)
+      } else {
+        ElMessage.success('验证码已发送')
+      }
 
-  // 开始倒计时
-  codeCooldown.value = 60
-  cooldownTimer = setInterval(() => {
-    codeCooldown.value--
-    if (codeCooldown.value <= 0 && cooldownTimer) {
-      clearInterval(cooldownTimer)
-      cooldownTimer = null
+      // 开始倒计时
+      codeCooldown.value = 60
+      cooldownTimer = setInterval(() => {
+        codeCooldown.value--
+        if (codeCooldown.value <= 0 && cooldownTimer) {
+          clearInterval(cooldownTimer)
+          cooldownTimer = null
+        }
+      }, 1000)
     }
-  }, 1000)
+  } catch (error) {
+    console.error('发送验证码失败:', error)
+  }
 }
 
 // 手机验证码登录
@@ -311,13 +335,19 @@ const handlePhoneLogin = async () => {
     if (valid) {
       loading.value = true
       try {
-        // TODO: 调用手机验证码登录 API
-        await userStore.login({
-          account: phoneLoginForm.phone,
-          password: phoneLoginForm.code, // 模拟，实际应调用专门的手机登录接口
+        // 调用手机验证码登录 API
+        const res = await phoneLogin({
+          phone: phoneLoginForm.phone,
+          code: phoneLoginForm.code,
         })
-        ElMessage.success('登录成功')
-        userStore.closeAuthModal()
+        if (res.code === 200) {
+          // 保存 token 和用户信息
+          userStore.token = res.data.token
+          userStore.userInfo = res.data.user
+          localStorage.setItem('token', res.data.token)
+          ElMessage.success('登录成功')
+          userStore.closeAuthModal()
+        }
       } catch (error) {
         console.error('登录错误:', error)
       } finally {
@@ -391,71 +421,71 @@ const handleLogin = async () => {
   })
 }
 
-// --- 注册逻辑 ---
-const registerFormRef = ref<FormInstance>()
-const registerForm = reactive({
-  username: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-})
-const agreeTerms = ref(false)
+// --- 注册逻辑（暂时隐藏）---
+// const registerFormRef = ref<FormInstance>()
+// const registerForm = reactive({
+//   username: '',
+//   email: '',
+//   password: '',
+//   confirmPassword: '',
+// })
+// const agreeTerms = ref(false)
 
-const validateUsername = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
-  if (!value) return callback(new Error('请输入用户名'))
-  if (value.length < 3 || value.length > 20) return callback(new Error('用户名长度为 3-20 个字符'))
-  if (!/^[a-zA-Z0-9_]+$/.test(value)) return callback(new Error('用户名只能包含字母、数字和下划线'))
-  callback()
-}
+// const validateUsername = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+//   if (!value) return callback(new Error('请输入用户名'))
+//   if (value.length < 3 || value.length > 20) return callback(new Error('用户名长度为 3-20 个字符'))
+//   if (!/^[a-zA-Z0-9_]+$/.test(value)) return callback(new Error('用户名只能包含字母、数字和下划线'))
+//   callback()
+// }
 
-const validateEmail = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
-  if (!value) return callback(new Error('请输入邮箱'))
-  const emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
-  if (!emailReg.test(value)) return callback(new Error('请输入正确的邮箱格式'))
-  callback()
-}
+// const validateEmail = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+//   if (!value) return callback(new Error('请输入邮箱'))
+//   const emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
+//   if (!emailReg.test(value)) return callback(new Error('请输入正确的邮箱格式'))
+//   callback()
+// }
 
-const validateConfirmPassword = (
-  _rule: unknown,
-  value: string,
-  callback: (error?: Error) => void,
-) => {
-  if (!value) return callback(new Error('请确认密码'))
-  if (value !== registerForm.password) return callback(new Error('两次输入的密码不一致'))
-  callback()
-}
+// const validateConfirmPassword = (
+//   _rule: unknown,
+//   value: string,
+//   callback: (error?: Error) => void,
+// ) => {
+//   if (!value) return callback(new Error('请确认密码'))
+//   if (value !== registerForm.password) return callback(new Error('两次输入的密码不一致'))
+//   callback()
+// }
 
-const registerRules: FormRules = {
-  username: [{ required: true, validator: validateUsername, trigger: 'blur' }],
-  email: [{ required: true, validator: validateEmail, trigger: 'blur' }],
-  password: [{ required: true, validator: validatePassword, trigger: 'blur' }],
-  confirmPassword: [{ required: true, validator: validateConfirmPassword, trigger: 'blur' }],
-}
+// const registerRules: FormRules = {
+//   username: [{ required: true, validator: validateUsername, trigger: 'blur' }],
+//   email: [{ required: true, validator: validateEmail, trigger: 'blur' }],
+//   password: [{ required: true, validator: validatePassword, trigger: 'blur' }],
+//   confirmPassword: [{ required: true, validator: validateConfirmPassword, trigger: 'blur' }],
+// }
 
-const handleRegister = async () => {
-  if (!registerFormRef.value) return
-  if (!agreeTerms.value) return ElMessage.warning('请先阅读并同意用户协议')
-  await registerFormRef.value.validate(async (valid) => {
-    if (valid) {
-      loading.value = true
-      try {
-        const res = await reqRegister({
-          username: registerForm.username,
-          email: registerForm.email,
-          password: registerForm.password,
-        })
-        if (res.data) {
-          ElMessage.success('注册成功，请登录')
-          userStore.switchAuthMode('login')
-        }
-      } catch (error) {
-        console.error('注册错误:', error)
-      } finally {
-        loading.value = false
-      }
-    }
-  })
-}
+// const handleRegister = async () => {
+//   if (!registerFormRef.value) return
+//   if (!agreeTerms.value) return ElMessage.warning('请先阅读并同意用户协议')
+//   await registerFormRef.value.validate(async (valid) => {
+//     if (valid) {
+//       loading.value = true
+//       try {
+//         const res = await reqRegister({
+//           username: registerForm.username,
+//           email: registerForm.email,
+//           password: registerForm.password,
+//         })
+//         if (res.data) {
+//           ElMessage.success('注册成功，请登录')
+//           userStore.switchAuthMode('login')
+//         }
+//       } catch (error) {
+//         console.error('注册错误:', error)
+//       } finally {
+//         loading.value = false
+//       }
+//     }
+//   })
+// }
 </script>
 
 <style scoped lang="scss">

@@ -33,20 +33,22 @@ export const useUserStore = defineStore('user', {
         // 调用真实的登录接口
         const res = await reqLogin(loginParams)
 
-        // 从响应中提取 token 和 user 信息
-        const { token, user } = res.data
+        if (res.code === 200) {
+          // 从响应中提取 token 和 user 信息
+          const { token, user } = res.data
 
-        // 保存 token
-        this.token = token
-        // 将 user 信息转换为 userInfo 格式并保存
-        this.userInfo = {
-          id: user.id,
-          username: user.username,
-          email: user.email,
+          // 保存 token
+          this.token = token
+          // 将 user 信息转换为 userInfo 格式并保存
+          this.userInfo = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+          }
+
+          // 持久化存储 token
+          localStorage.setItem('token', token)
         }
-
-        // 持久化存储 token
-        localStorage.setItem('token', token)
 
         return res
       } catch (error) {
@@ -59,7 +61,9 @@ export const useUserStore = defineStore('user', {
     async getUserInfo() {
       try {
         const res = await reqUserInfo()
-        this.userInfo = res.data
+        if (res.code === 200) {
+          this.userInfo = res.data
+        }
         return res
       } catch (error) {
         console.error('获取用户信息失败:', error)
