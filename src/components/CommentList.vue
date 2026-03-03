@@ -221,13 +221,21 @@ const handleReply = (comment: Comment, parentComment?: Comment) => {
           transition: color 0.2s;
 
           &:hover {
-            color: #409eff;
+            svg {
+              color: #f56c6c;
+            }
+          }
+
+          &:active {
+            svg {
+              color: #f56c6c;
+            }
           }
 
           .el-icon {
             font-size: 14px;
 
-            &.liked {
+            svg.liked {
               color: #f56c6c;
             }
           }
@@ -311,13 +319,21 @@ const handleReply = (comment: Comment, parentComment?: Comment) => {
                 transition: color 0.2s;
 
                 &:hover {
-                  color: #409eff;
+                  svg {
+                    color: #f56c6c;
+                  }
+                }
+
+                &:active {
+                  svg {
+                    color: #f56c6c;
+                  }
                 }
 
                 .el-icon {
                   font-size: 12px;
 
-                  &.liked {
+                  svg.liked {
                     color: #f56c6c;
                   }
                 }

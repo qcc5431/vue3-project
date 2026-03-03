@@ -70,7 +70,16 @@
             </div>
             <div class="action-icons">
               <button class="action-btn" :class="{ active: note.isLiked }" @click="handleLike">
-                <span class="emoji-icon">{{ note.isLiked ? '❤️' : '🤍' }}</span>
+                <span class="heart-icon">
+                  <svg viewBox="0 0 1024 1024" :class="{ liked: note.isLiked }">
+                    <path
+                      :fill="note.isLiked ? 'currentColor' : 'none'"
+                      stroke="currentColor"
+                      stroke-width="40"
+                      d="M512 896a42.666667 42.666667 0 0 1-30.293333-12.373333l-331.093334-324.266667c-73.386667-73.386667-73.386667-192.853333 0-266.24 73.386667-73.386667 192.853333-73.386667 266.24 0L512 388.48l95.146667-95.36c73.386667-73.386667 192.853333-73.386667 266.24 0 73.386667 73.386667 73.386667 192.853333 0 266.24l-331.093334 324.266667A42.666667 42.666667 0 0 1 512 896z"
+                    />
+                  </svg>
+                </span>
                 <span class="action-count">{{ note.likeCount }}</span>
               </button>
               <button
@@ -480,18 +489,36 @@ const handleCommentLike = (commentId: string) => {
         transition: color 0.2s;
 
         &:hover {
-          color: #4a5a4f;
+          .heart-icon svg {
+            color: #f56c6c;
+          }
+        }
+
+        &.active {
+          .heart-icon svg.liked {
+            color: #f56c6c;
+          }
         }
 
         &.collect-btn.active {
           color: #f0a500;
         }
 
-        .emoji-icon {
-          font-size: 12px;
-          line-height: 1;
-          display: inline-block;
-          vertical-align: middle;
+        .heart-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          svg {
+            width: 16px;
+            height: 16px;
+            color: #8fa998;
+            transition: color 0.2s;
+
+            &.liked {
+              color: #f56c6c;
+            }
+          }
         }
 
         .action-count {
