@@ -126,6 +126,37 @@ export const useSocialStore = defineStore('social', {
       }
     },
 
+    // 评论点赞/取消点赞
+    async likeComment(commentId: string) {
+      try {
+        const response = await socialApi.likeComment({ commentId })
+        if (response.code === 200) {
+          const { isLiked, likeCount } = response.data
+          // 更新本地评论状态
+          const updateCommentLike = (comments: Comment[]): boolean => {
+            for (const comment of comments) {
+              if (comment.id === commentId) {
+                comment.isLiked = isLiked
+                comment.likeCount = likeCount
+                return true
+              }
+              if (comment.replies && updateCommentLike(comment.replies)) {
+                return true
+              }
+            }
+            return false
+          }
+          updateCommentLike(this.comments)
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('点赞失败:', error)
+        ElMessage.error('操作失败')
+        return false
+      }
+    },
+
     // 重置状态
     reset() {
       this.followingList = []

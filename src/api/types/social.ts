@@ -68,6 +68,21 @@ export interface AddCommentParams {
   replyTo?: string
 }
 
+// 评论点赞参数
+export interface LikeCommentParams {
+  commentId: string
+}
+
+// 评论点赞响应
+export interface LikeCommentResponse {
+  code: number
+  message: string
+  data: {
+    isLiked: boolean
+    likeCount: number
+  }
+}
+
 // 评论列表响应
 export interface CommentListResponse {
   code: number

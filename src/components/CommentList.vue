@@ -15,7 +15,16 @@
 
         <div class="comment-actions">
           <span class="action-btn" @click="handleLike(comment.id)">
-            <el-icon><Star :class="{ liked: comment.isLiked }" /></el-icon>
+            <el-icon>
+              <svg viewBox="0 0 1024 1024" :class="{ liked: comment.isLiked }">
+                <path
+                  :fill="comment.isLiked ? 'currentColor' : 'none'"
+                  stroke="currentColor"
+                  stroke-width="40"
+                  d="M512 896a42.666667 42.666667 0 0 1-30.293333-12.373333l-331.093334-324.266667c-73.386667-73.386667-73.386667-192.853333 0-266.24 73.386667-73.386667 192.853333-73.386667 266.24 0L512 388.48l95.146667-95.36c73.386667-73.386667 192.853333-73.386667 266.24 0 73.386667 73.386667 73.386667 192.853333 0 266.24l-331.093334 324.266667A42.666667 42.666667 0 0 1 512 896z"
+                />
+              </svg>
+            </el-icon>
             {{ comment.likeCount }}
           </span>
           <span class="action-btn" @click="handleReply(comment)">
@@ -26,11 +35,7 @@
 
         <!-- 子回复列表 -->
         <div v-if="comment.replies && comment.replies.length > 0" class="replies-section">
-          <div
-            v-for="reply in getVisibleReplies(comment)"
-            :key="reply.id"
-            class="reply-item"
-          >
+          <div v-for="reply in getVisibleReplies(comment)" :key="reply.id" class="reply-item">
             <UserAvatar :user-id="reply.userId" :avatar="reply.userAvatar" :size="28" />
             <div class="reply-content">
               <div class="reply-header">
@@ -43,7 +48,16 @@
               <div class="reply-text">{{ reply.content }}</div>
               <div class="reply-actions">
                 <span class="action-btn" @click="handleLike(reply.id)">
-                  <el-icon><Star :class="{ liked: reply.isLiked }" /></el-icon>
+                  <el-icon>
+                    <svg viewBox="0 0 1024 1024" :class="{ liked: reply.isLiked }">
+                      <path
+                        :fill="reply.isLiked ? 'currentColor' : 'none'"
+                        stroke="currentColor"
+                        stroke-width="40"
+                        d="M512 896a42.666667 42.666667 0 0 1-30.293333-12.373333l-331.093334-324.266667c-73.386667-73.386667-73.386667-192.853333 0-266.24 73.386667-73.386667 192.853333-73.386667 266.24 0L512 388.48l95.146667-95.36c73.386667-73.386667 192.853333-73.386667 266.24 0 73.386667 73.386667 73.386667 192.853333 0 266.24l-331.093334 324.266667A42.666667 42.666667 0 0 1 512 896z"
+                      />
+                    </svg>
+                  </el-icon>
                   {{ reply.likeCount }}
                 </span>
                 <span class="action-btn" @click="handleReply(reply, comment)">
@@ -70,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { Star, ChatDotRound, ArrowDown } from '@element-plus/icons-vue'
+import { ChatDotRound, ArrowDown } from '@element-plus/icons-vue'
 import type { Comment } from '@/api/types/social'
 import UserAvatar from './UserAvatar.vue'
 

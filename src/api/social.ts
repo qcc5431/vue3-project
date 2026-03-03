@@ -6,6 +6,8 @@ import type {
   UserListResponse,
   GetCommentsParams,
   AddCommentParams,
+  LikeCommentParams,
+  LikeCommentResponse,
   CommentListResponse,
   CommonResponse,
 } from './types/social'
@@ -38,4 +40,9 @@ export const getComments = (params: GetCommentsParams): Promise<CommentListRespo
 // 添加评论
 export const addComment = (params: AddCommentParams): Promise<CommonResponse> => {
   return request.post('/api/social/comments', params)
+}
+
+// 评论点赞/取消点赞
+export const likeComment = (params: LikeCommentParams): Promise<LikeCommentResponse> => {
+  return request.post('/api/social/comments/like', params)
 }

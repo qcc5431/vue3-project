@@ -249,8 +249,11 @@ const cancelReply = () => {
 
 // 评论点赞
 const handleCommentLike = (commentId: string) => {
-  console.log('Like comment:', commentId)
-  // TODO: 实现评论点赞功能
+  if (!isLogin.value) {
+    userStore.openLoginModal()
+    return
+  }
+  socialStore.likeComment(commentId)
 }
 </script>
 
