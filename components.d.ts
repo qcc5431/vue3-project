@@ -11,6 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AITitleSuggest: typeof import('./src/components/AIAssistant/AITitleSuggest.vue')['default']
+    AIToolbar: typeof import('./src/components/AIAssistant/AIToolbar.vue')['default']
     AuthModal: typeof import('./src/components/AuthModal.vue')['default']
     BackToTop: typeof import('./src/components/BackToTop.vue')['default']
     CarouselNoteCard: typeof import('./src/components/CarouselNoteCard.vue')['default']

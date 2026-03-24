@@ -117,12 +117,17 @@ const router = createRouter({
 })
 
 // 全局前置守卫：路由跳转前的鉴权判断
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   // 设置页面标题（统一显示"旅行笔记"）
   document.title = '旅行笔记'
 
   const userStore = useUserStore()
   const isLogin = userStore.isLogin
+
+  // 已登录但没有用户信息时，先获取用户信息
+  if (isLogin && !userStore.userInfo) {
+    await userStore.getUserInfo()
+  }
 
   // 如果目标路由需要登录认证
   if (to.meta.requiresAuth) {

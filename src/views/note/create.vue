@@ -2,12 +2,18 @@
   <div class="create-note-page">
     <div class="note-editor">
       <!-- 标题输入 -->
-      <el-input
-        v-model="formData.title"
-        placeholder="请输入标题"
-        class="title-input"
-        maxlength="100"
-      />
+      <div class="title-row">
+        <el-input
+          v-model="formData.title"
+          placeholder="请输入标题"
+          class="title-input"
+          maxlength="100"
+        />
+        <AITitleSuggest
+          :content="formData.content"
+          @select="formData.title = $event"
+        />
+      </div>
 
       <!-- Markdown编辑器 -->
       <div class="editor-wrapper">
@@ -91,6 +97,7 @@
 import { Upload, Picture, Close } from '@element-plus/icons-vue'
 import { useNoteStore } from '@/store/modules/note'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
+import { AITitleSuggest } from '@/components/AIAssistant'
 import type { MediaItem } from '@/api/types/note'
 import { uploadImage, uploadVideo } from '@/api/upload'
 
@@ -397,6 +404,19 @@ const handleCancel = () => {
         &::placeholder {
           color: #c8c9cc;
         }
+      }
+    }
+
+    // 标题行
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+
+      .title-input {
+        flex: 1;
+        margin-bottom: 0;
       }
     }
 

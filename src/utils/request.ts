@@ -5,7 +5,7 @@ import { useUserStore } from '@/store/modules/user'
 // 利用 axios 对象的 create 方法，创建 axios 实例，来增加一些额外配置
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 5000,
+  timeout: 30000,
 })
 
 // 请求拦截器：在请求发送前自动携带 token

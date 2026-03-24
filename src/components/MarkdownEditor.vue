@@ -50,6 +50,14 @@
 
       <EmojiPicker @select="insertEmoji" />
 
+      <!-- AI助手 -->
+      <AIToolbar
+        :content="content"
+        :selected-text="selectedText"
+        @update:content="content = $event"
+        @replace-selection="replaceSelection"
+      />
+
       <div class="toolbar-right">
         <el-switch v-model="showPreview" active-text="预览" size="small" />
       </div>
@@ -74,6 +82,7 @@
         :placeholder="placeholder"
         class="editor-textarea"
         @input="handleInput"
+        @select="handleSelectionChange"
       />
       <div v-if="showPreview" class="preview-pane">
         <MarkdownPreview :content="content" />
@@ -95,6 +104,7 @@ import {
 } from '@element-plus/icons-vue'
 import EmojiPicker from './EmojiPicker.vue'
 import MarkdownPreview from './MarkdownPreview.vue'
+import { AIToolbar } from './AIAssistant'
 
 interface Props {
   modelValue: string
@@ -122,6 +132,38 @@ const content = computed({
 const imageInput = ref<HTMLInputElement>()
 const textareaRef = ref()
 const showPreview = ref(false)
+const selectedText = ref('')
+
+// 获取选中的文本
+const getSelectedText = () => {
+  const textarea = textareaRef.value?.$el?.querySelector('textarea')
+  if (textarea) {
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    selectedText.value = content.value.substring(start, end)
+  }
+  return selectedText.value
+}
+
+// 替换选中的文本
+const replaceSelection = (newText: string) => {
+  const textarea = textareaRef.value?.$el?.querySelector('textarea')
+  if (textarea) {
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    content.value = content.value.substring(0, start) + newText + content.value.substring(end)
+    // 设置光标位置
+    nextTick(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + newText.length, start + newText.length)
+    })
+  }
+}
+
+// 监听选择变化
+const handleSelectionChange = () => {
+  getSelectedText()
+}
 
 // 插入加粗
 const insertBold = () => {
@@ -251,6 +293,9 @@ onMounted(() => {
   const textarea = textareaRef.value?.$el?.querySelector('textarea')
   if (textarea) {
     textarea.addEventListener('paste', handlePaste)
+    textarea.addEventListener('select', handleSelectionChange)
+    textarea.addEventListener('mouseup', handleSelectionChange)
+    textarea.addEventListener('keyup', handleSelectionChange)
   }
 })
 
@@ -258,6 +303,9 @@ onUnmounted(() => {
   const textarea = textareaRef.value?.$el?.querySelector('textarea')
   if (textarea) {
     textarea.removeEventListener('paste', handlePaste)
+    textarea.removeEventListener('select', handleSelectionChange)
+    textarea.removeEventListener('mouseup', handleSelectionChange)
+    textarea.removeEventListener('keyup', handleSelectionChange)
   }
 })
 </script>
