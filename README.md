@@ -1,48 +1,57 @@
-# vue3-project
+# 旅行笔记
 
-This template should help get you started developing with Vue 3 in Vite.
+一个旅行笔记分享社交平台。
 
-## Recommended IDE Setup
+## 在线演示
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+暂无
 
-## Recommended Browser Setup
+## 功能介绍
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+用户可以在平台上创建和分享旅行笔记，支持图文和视频内容，可以关注其他旅行者、点赞收藏喜欢的内容。编辑器支持 Markdown 语法，并提供 AI 辅助写作功能。
 
-## Type Support for `.vue` Imports in TS
+## 技术栈
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+Vue 3 + TypeScript + Vite + Pinia + Vue Router + Element Plus + Axios + SCSS
 
-## Customize configuration
+## 本地运行
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
+```bash
+# 安装依赖
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
+# 启动开发服务器
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## 构建部署
 
-```sh
-npm run build
+```bash
+# 生产环境构建
+npm run build:prod
+
+# 开发环境构建
+npm run build:dev
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+## 后端接口
 
-```sh
-npm run lint
+项目已部署后端服务，API 地址配置在 `.env.production` 中。
+
+## 目录说明
+
 ```
+src/
+├── api/          # 接口请求和类型定义
+├── assets/       # 静态资源
+├── components/   # 公共组件
+├── layout/       # 页面布局
+├── router/       # 路由
+├── store/        # 状态管理
+├── utils/        # 工具函数
+└── views/        # 页面
+```
+
+## License
+
+MIT
