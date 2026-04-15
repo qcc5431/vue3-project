@@ -1,7 +1,7 @@
 <template>
   <div class="media-uploader">
     <draggable
-      v-model="mediaList"
+      v-model="displayList"
       item-key="id"
       class="media-grid"
       :animation="200"
@@ -22,9 +22,10 @@
       </template>
     </draggable>
 
-    <div v-if="mediaList.length < maxCount" class="upload-btn" @click="triggerUpload">
-      <el-icon class="upload-icon"><Plus /></el-icon>
-      <span>添加图片/视频</span>
+    <div v-if="modelValue.length < maxCount" class="upload-btn" :class="{ 'is-loading': uploading }" @click="triggerUpload">
+      <el-icon v-if="!uploading" class="upload-icon"><Plus /></el-icon>
+      <el-icon v-else class="is-loading"><Loading /></el-icon>
+      <span>{{ uploading ? '上传中...' : '添加图片/视频' }}</span>
     </div>
 
     <input
@@ -39,18 +40,24 @@
 </template>
 
 <script setup lang="ts">
-import { Close, Plus } from '@element-plus/icons-vue'
+import { Close, Plus, Loading } from '@element-plus/icons-vue'
 import draggable from 'vuedraggable'
 import type { MediaItem } from '@/api/types/note'
 import { getImageSize, getVideoMetadata } from '@/utils/mediaHelper'
 
+// 自定义上传函数类型
+type UploadFunction = (file: File) => Promise<MediaItem | null>
+
 interface Props {
   modelValue: MediaItem[]
   maxCount?: number
+  uploadFn?: UploadFunction // 自定义上传函数，若提供则使用远程上传
+  loading?: boolean // 外部加载状态
 }
 
 interface Emits {
   (e: 'update:modelValue', value: MediaItem[]): void
+  (e: 'update:loading', value: boolean): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -60,10 +67,24 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const fileInput = ref<HTMLInputElement>()
-const mediaList = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-})
+const uploading = ref(false)
+
+// 内部维护一个用于展示的列表，URL 可能是本地 blob 或远程 URL
+const displayList = ref<{ id: string; url: string; type: 'image' | 'video'; duration?: number }[]>([])
+
+// 初始化 displayList
+watch(
+  () => props.modelValue,
+  (list) => {
+    displayList.value = list.map((item, index) => ({
+      id: `${item.type}-${item.url}-${index}`,
+      url: item.url,
+      type: item.type,
+      duration: item.duration,
+    }))
+  },
+  { immediate: true }
+)
 
 const triggerUpload = () => {
   fileInput.value?.click()
@@ -75,11 +96,14 @@ const handleFileChange = async (event: Event) => {
 
   if (files.length === 0) return
 
-  if (mediaList.value.length + files.length > props.maxCount) {
+  if (props.modelValue.length + files.length > props.maxCount) {
     ElMessage.warning(`最多只能上传 ${props.maxCount} 个文件`)
     target.value = ''
     return
   }
+
+  uploading.value = true
+  emit('update:loading', true)
 
   const newMediaItems: MediaItem[] = []
 
@@ -93,25 +117,34 @@ const handleFileChange = async (event: Event) => {
         continue
       }
 
-      const url = URL.createObjectURL(file)
+      if (props.uploadFn) {
+        // 使用自定义上传函数（远程上传）
+        const result = await props.uploadFn(file)
+        if (result) {
+          newMediaItems.push(result)
+        }
+      } else {
+        // 本地模式：创建 blob URL
+        const url = URL.createObjectURL(file)
 
-      if (isImage) {
-        const { width, height } = await getImageSize(file)
-        newMediaItems.push({
-          type: 'image',
-          url,
-          width,
-          height,
-        })
-      } else if (isVideo) {
-        const { width, height, duration } = await getVideoMetadata(file)
-        newMediaItems.push({
-          type: 'video',
-          url,
-          width,
-          height,
-          duration,
-        })
+        if (isImage) {
+          const { width, height } = await getImageSize(file)
+          newMediaItems.push({
+            type: 'image',
+            url,
+            width,
+            height,
+          })
+        } else if (isVideo) {
+          const { width, height, duration } = await getVideoMetadata(file)
+          newMediaItems.push({
+            type: 'video',
+            url,
+            width,
+            height,
+            duration,
+          })
+        }
       }
     } catch (error) {
       console.error('处理文件失败:', error)
@@ -119,20 +152,27 @@ const handleFileChange = async (event: Event) => {
     }
   }
 
-  mediaList.value = [...mediaList.value, ...newMediaItems]
+  if (newMediaItems.length > 0) {
+    emit('update:modelValue', [...props.modelValue, ...newMediaItems])
+    ElMessage.success(`已添加 ${newMediaItems.length} 个文件`)
+  }
+
+  uploading.value = false
+  emit('update:loading', false)
   target.value = ''
 }
 
 const removeMedia = (index: number) => {
-  const item = mediaList.value[index]
-  if (item) {
-    URL.revokeObjectURL(item.url)
-  }
-  mediaList.value = mediaList.value.filter((_, i) => i !== index)
+  const newList = props.modelValue.filter((_, i) => i !== index)
+  emit('update:modelValue', newList)
 }
 
 const handleDragEnd = () => {
-  emit('update:modelValue', mediaList.value)
+  // 根据拖拽后的 displayList 顺序重新排列 modelValue
+  const newOrder = displayList.value.map((item) => {
+    return props.modelValue.find((m) => m.url === item.url)!
+  }).filter(Boolean)
+  emit('update:modelValue', newOrder)
 }
 
 const formatDuration = (duration?: number): string => {
@@ -143,9 +183,14 @@ const formatDuration = (duration?: number): string => {
 }
 
 onBeforeUnmount(() => {
-  mediaList.value.forEach((item) => {
-    URL.revokeObjectURL(item.url)
-  })
+  // 只有本地模式下才需要清理 blob URL
+  if (!props.uploadFn) {
+    props.modelValue.forEach((item) => {
+      if (item.url.startsWith('blob:')) {
+        URL.revokeObjectURL(item.url)
+      }
+    })
+  }
 })
 </script>
 
@@ -230,6 +275,12 @@ onBeforeUnmount(() => {
     &:hover {
       border-color: #409eff;
       color: #409eff;
+    }
+
+    &.is-loading {
+      cursor: not-allowed;
+      pointer-events: none;
+      color: #c0c4cc;
     }
 
     .upload-icon {

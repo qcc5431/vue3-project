@@ -23,39 +23,23 @@
       <!-- 封面设置区域 -->
       <div class="cover-section">
         <div class="section-title">封面设置</div>
-        <div v-if="formData.coverMedia.length > 0" class="cover-preview">
-          <div class="preview-grid">
-            <div v-for="(media, index) in formData.coverMedia" :key="index" class="preview-item">
-              <img v-if="media.type === 'image'" :src="media.url" alt="封面" />
-              <video v-else :src="media.url" />
-              <div class="remove-btn" @click="removeCoverMedia(index)">
-                <el-icon><Close /></el-icon>
-              </div>
-            </div>
-          </div>
+        <div v-if="formData.coverMedia.length === 0" class="cover-tips">
+          未设置封面，将自动使用文中前3张图片
         </div>
-        <div v-else class="cover-tips">未设置封面，将自动使用文中前3张图片</div>
+        <MediaUploader
+          v-model="formData.coverMedia"
+          :max-count="9"
+          :upload-fn="handleMediaUpload"
+        />
         <div class="cover-actions">
           <el-button text @click="selectFromContent">
             <el-icon><Picture /></el-icon>
             从文中选择
           </el-button>
-          <el-button text @click="uploadCover">
-            <el-icon><Upload /></el-icon>
-            本地上传
-          </el-button>
           <el-button v-if="formData.coverMedia.length > 0" text @click="clearCover">
             清除封面
           </el-button>
         </div>
-        <input
-          ref="coverInput"
-          type="file"
-          accept="image/*,video/*"
-          multiple
-          style="display: none"
-          @change="handleCoverUpload"
-        />
       </div>
 
       <!-- 可见性设置 -->
@@ -94,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { Upload, Picture, Close } from '@element-plus/icons-vue'
+import { Upload, Picture } from '@element-plus/icons-vue'
 import { useNoteStore } from '@/store/modules/note'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import { AITitleSuggest } from '@/components/AIAssistant'
@@ -109,7 +93,6 @@ const isEdit = computed(() => !!route.params.id)
 const loading = ref(false)
 
 const markdownInput = ref<HTMLInputElement>()
-const coverInput = ref<HTMLInputElement>()
 
 const formData = reactive({
   title: '',
@@ -124,6 +107,46 @@ const extractImagesFromContent = (): string[] => {
   const regex = /!\[.*?\]\((.*?)\)/g
   const matches = [...formData.content.matchAll(regex)]
   return matches.map((match) => match[1] || '').filter((url) => url)
+}
+
+// MediaUploader 的上传函数
+const handleMediaUpload = async (file: File): Promise<MediaItem | null> => {
+  const isImage = file.type.startsWith('image/')
+  const isVideo = file.type.startsWith('video/')
+
+  if (!isImage && !isVideo) {
+    ElMessage.warning(`文件 ${file.name} 格式不支持`)
+    return null
+  }
+
+  try {
+    if (isImage) {
+      const res = await uploadImage(file, 'note')
+      if (res.code === 200 && res.data) {
+        return {
+          type: 'image',
+          url: res.data.url,
+          width: res.data.width,
+          height: res.data.height,
+        }
+      }
+    } else if (isVideo) {
+      const res = await uploadVideo(file)
+      if (res.code === 200 && res.data) {
+        return {
+          type: 'video',
+          url: res.data.url,
+          width: res.data.width,
+          height: res.data.height,
+          duration: res.data.duration,
+        }
+      }
+    }
+  } catch (error) {
+    console.error('上传失败:', error)
+    ElMessage.error(`上传 ${file.name} 失败`)
+  }
+  return null
 }
 
 // 从文中选择封面
@@ -199,86 +222,6 @@ const selectFromContent = () => {
     .catch(() => {
       // 用户取消
     })
-}
-
-// 从本地上传封面
-const uploadCover = () => {
-  coverInput.value?.click()
-}
-
-// 处理封面上传（立即上传到COS）
-const handleCoverUpload = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const files = Array.from(target.files || [])
-
-  if (files.length === 0) return
-
-  if (formData.coverMedia.length + files.length > 9) {
-    ElMessage.warning('封面最多9张图片/视频')
-    target.value = ''
-    return
-  }
-
-  const newMediaItems: MediaItem[] = []
-  const uploadPromises: Promise<void>[] = []
-
-  for (const file of files) {
-    const isImage = file.type.startsWith('image/')
-    const isVideo = file.type.startsWith('video/')
-
-    if (!isImage && !isVideo) {
-      ElMessage.warning(`文件 ${file.name} 格式不支持`)
-      continue
-    }
-
-    // 立即上传到COS
-    const uploadPromise = (async () => {
-      try {
-        if (isImage) {
-          const res = await uploadImage(file, 'note')
-          if (res.code === 200 && res.data) {
-            newMediaItems.push({
-              type: 'image',
-              url: res.data.url,
-              width: res.data.width,
-              height: res.data.height,
-            })
-          }
-        } else if (isVideo) {
-          const res = await uploadVideo(file)
-          if (res.code === 200 && res.data) {
-            newMediaItems.push({
-              type: 'video',
-              url: res.data.url,
-              width: res.data.width,
-              height: res.data.height,
-              duration: res.data.duration,
-            })
-          }
-        }
-      } catch (error) {
-        console.error('上传失败:', error)
-        ElMessage.error(`上传 ${file.name} 失败`)
-      }
-    })()
-
-    uploadPromises.push(uploadPromise)
-  }
-
-  // 等待所有上传完成
-  await Promise.all(uploadPromises)
-
-  if (newMediaItems.length > 0) {
-    formData.coverMedia = [...formData.coverMedia, ...newMediaItems]
-    ElMessage.success(`已上传 ${newMediaItems.length} 个文件`)
-  }
-
-  target.value = ''
-}
-
-// 移除封面媒体
-const removeCoverMedia = (index: number) => {
-  formData.coverMedia = formData.coverMedia.filter((_, i) => i !== index)
 }
 
 // 清除封面
@@ -440,66 +383,6 @@ const handleCancel = () => {
       border-top: 1px solid #ebeef5;
       margin-bottom: 24px;
 
-      .cover-preview {
-        margin-bottom: 16px;
-
-        .preview-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-          gap: 12px;
-
-          .preview-item {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid #e5e6eb;
-            cursor: pointer;
-            transition: all 0.2s;
-
-            &:hover {
-              border-color: #409eff;
-              transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
-
-              .remove-btn {
-                opacity: 1;
-              }
-            }
-
-            img,
-            video {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-            }
-
-            .remove-btn {
-              position: absolute;
-              top: 6px;
-              right: 6px;
-              width: 24px;
-              height: 24px;
-              border-radius: 50%;
-              background: rgba(0, 0, 0, 0.6);
-              color: #fff;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              cursor: pointer;
-              opacity: 0;
-              transition: all 0.2s;
-              font-size: 14px;
-
-              &:hover {
-                background: rgba(0, 0, 0, 0.8);
-              }
-            }
-          }
-        }
-      }
-
       .cover-tips {
         padding: 12px 16px;
         background: #f7f8fa;
@@ -512,6 +395,7 @@ const handleCancel = () => {
       .cover-actions {
         display: flex;
         gap: 16px;
+        margin-top: 12px;
 
         :deep(.el-button) {
           color: #409eff;
